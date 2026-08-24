@@ -128,6 +128,9 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.6/dist/docx-preview.min.js"></script>
+  <script>window.docxPreview = window.docx;</script>
   <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
@@ -343,30 +346,26 @@
     }
 
     async function convertWordToPdf(file, name) {
-      if (typeof mammoth === 'undefined' || typeof html2pdf === 'undefined') {
+      if (typeof docxPreview === 'undefined' || typeof html2pdf === 'undefined') {
         throw new Error('Word-to-PDF libraries could not be loaded. Check your internet connection.');
       }
-      const result = await mammoth.convertToHtml({
-        arrayBuffer: await file.arrayBuffer()
-      }, {
-        convertImage: mammoth.images.imgElement(image => image.read('base64').then(base64 => ({
-          src: 'data:' + image.contentType + ';base64,' + base64
-        })))
-      });
-      if (!result.value.trim()) throw new Error('No readable text was found in this Word document.');
       const printable = document.createElement('article');
-      printable.innerHTML = result.value;
-      printable.style.cssText = 'width: 180mm; padding: 0; color: #000; background: #fff; font: 11pt Arial, sans-serif; line-height: 1.45;';
+      printable.style.cssText = 'width: 180mm; min-height: 267mm; padding: 0; color: #000; background: #fff; font: 11pt Arial, sans-serif; line-height: 1.45;';
+      await docxPreview.renderAsync(await file.arrayBuffer(), printable, null, {
+        ignoreWidth: true,
+        ignoreHeight: true,
+        breakPages: true,
+        renderHeaders: true,
+        renderFooters: true,
+        renderFootnotes: true,
+        experimental: true
+      });
+      if (!printable.textContent.trim() && !printable.querySelector('img, table')) {
+        throw new Error('No readable content was found in this Word document.');
+      }
       printable.querySelectorAll('img').forEach(image => {
         image.style.maxWidth = '100%';
         image.style.height = 'auto';
-      });
-      printable.querySelectorAll('a').forEach(link => {
-        link.style.color = '#0563c1';
-        link.style.textDecoration = 'underline';
-      });
-      printable.querySelectorAll('ul, ol').forEach(list => {
-        list.style.paddingLeft = '24px';
       });
       printable.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
         heading.style.pageBreakAfter = 'avoid';
