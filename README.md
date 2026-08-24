@@ -1,4 +1,4 @@
-# PDF or Image to Word
+# PDF to Word
 
 A browser-only converter that supports:
 
@@ -7,12 +7,10 @@ A browser-only converter that supports:
 - Image to editable text with OCR
 - Original image embedded in Word
 
-## Publish online 24/7
+## Publish website 24/7
 
-This is a static website. Upload the contents of this folder to any static host:
+This is a website.
 
-- **Netlify:** Open Netlify Drop and drag this folder into the page.
-- **Vercel:** Import the folder as a static project; use `index.html` as the entry page.
-- **GitHub Pages:** Create a repository, upload `index.html`, then enable Pages from the repository's main branch.
+## CLICK HERE: "https://pdf-to-word.thanhthesieubells.workers.dev/"
 
-No server or database is required. Conversion runs in the visitor's browser. The app loads PDF.js, docx, and Tesseract.js from public CDNs, so the deployed page needs internet access.
+This website loads PDF.js, docx, and Tesseract.js from public CDNs, so the deployed page needs internet access.
