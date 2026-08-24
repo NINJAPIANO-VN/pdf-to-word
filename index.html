@@ -58,7 +58,6 @@
     .status[data-type="error"] { border-color: #b34636; color: #b34636; }
     .progress { height: 4px; margin-top: 15px; overflow: hidden; background: #e7eeec; }
     .progress span { display: block; width: 0; height: 100%; background: var(--coral); transition: width .2s; }
-    .ocr-result { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-left: 3px solid var(--teal); color: #333; background: #fafafa; white-space: pre-wrap; font: 10pt Arial, sans-serif; }
 
     footer { margin-top: 19px; color: #849092; font: 12px Arial, sans-serif; }
     @media (max-width: 700px) {
@@ -77,7 +76,7 @@
         <p class="eyebrow">PDF to WORD Converter</p>
         <h1>PDF, Image, or Word Converter</h1>
       </div>
-      <p class="intro">hello guys <3</p>
+      <p class="intro">hello guys &lt;3</p>
     </header>
 
     <section class="workspace" aria-label="Document conversion workspace">
@@ -85,7 +84,6 @@
         <div class="drop-content">
           <h2>Drop your PDF or IMAGE or WORD here</h2>
           <p class="drop-copy">Convert PDFs and images to editable Word files, or export Word documents directly as PDFs.</p>
-          <p class="drop-copy">Warning: "Don't convert WORD to PDF. IT BAD, but image convert. IT PERFECT"</p>
           <button class="button" id="chooseButton" type="button"><span aria-hidden="true">↑</span> Choose File</button>
           <input id="fileInput" type="file" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx,image/png,image/jpeg,image/webp" hidden>
           <p class="hint">PDF, DOCX, PNG, JPG, or WEBP · Process 1 file at a time</p>
@@ -99,119 +97,17 @@
           <input id="documentName" type="text" value="converted-document" maxlength="80">
         </div>
         <div class="field">
-          <label for="pageSizeSelect">Page Size</label>
-          <select id="pageSizeSelect">
-            <option value="Letter">Letter</option>
-            <option value="A4" selected>A4</option>
-            <option value="Legal">Legal</option>
-            <option value="Executive">Executive</option>
-            <option value="A3">A3</option>
-            <option value="A5">A5</option>
-          </select>
-        </div>
-        <div class="field">
           <label for="ocrLanguage">OCR Language</label>
           <select id="ocrLanguage">
-            <option value="auto">Auto-detect Language (All Languages)</option>
+            <option value="vie+eng" selected>Vietnamese + English</option>
             <option value="eng">English</option>
             <option value="vie">Vietnamese</option>
-            <option value="eng+vie">English + Vietnamese</option>
-            <option value="afr">Afrikaans</option>
-            <option value="sqi">Albanian</option>
-            <option value="amh">Amharic</option>
-            <option value="ara">Arabic</option>
-            <option value="hyw">Armenian</option>
-            <option value="asm">Assamese</option>
-            <option value="aze">Azerbaijani</option>
-            <option value="eus">Basque</option>
-            <option value="bel">Belarusian</option>
-            <option value="ben">Bengali</option>
-            <option value="bos">Bosnian</option>
-            <option value="bul">Bulgarian</option>
-            <option value="cat">Catalan</option>
-            <option value="ceb">Cebuano</option>
-            <option value="chi_sim">Chinese (Simplified)</option>
-            <option value="chi_tra">Chinese (Traditional)</option>
-            <option value="chr">Cherokee</option>
-            <option value="cos">Corsican</option>
-            <option value="hrv">Croatian</option>
-            <option value="ces">Czech</option>
-            <option value="dan">Danish</option>
-            <option value="nld">Dutch</option>
-            <option value="epo">Esperanto</option>
-            <option value="est">Estonian</option>
-            <option value="fao">Faroese</option>
-            <option value="fil">Filipino / Tagalog</option>
-            <option value="fin">Finnish</option>
-            <option value="fra">French</option>
-            <option value="fry">Frisian</option>
-            <option value="glg">Galician</option>
-            <option value="kat">Georgian</option>
-            <option value="deu">German</option>
-            <option value="ell">Greek</option>
-            <option value="guj">Gujarati</option>
-            <option value="hat">Haitian Creole</option>
-            <option value="heb">Hebrew</option>
-            <option value="hin">Hindi</option>
-            <option value="hun">Hungarian</option>
-            <option value="isl">Icelandic</option>
-            <option value="ind">Indonesian</option>
-            <option value="gle">Irish</option>
-            <option value="ita">Italian</option>
-            <option value="jpn">Japanese</option>
-            <option value="kan">Kannada</option>
-            <option value="kaz">Kazakh</option>
-            <option value="khm">Khmer</option>
-            <option value="kor">Korean</option>
-            <option value="kur">Kurdish</option>
-            <option value="kir">Kyrgyz</option>
-            <option value="lao">Lao</option>
-            <option value="lat">Latin</option>
-            <option value="lav">Latvian</option>
-            <option value="lit">Lithuanian</option>
-            <option value="ltz">Luxembourgish</option>
-            <option value="mkd">Macedonian</option>
-            <option value="msa">Malay</option>
-            <option value="mal">Malayalam</option>
-            <option value="mlt">Maltese</option>
-            <option value="mri">Maori</option>
-            <option value="mar">Marathi</option>
-            <option value="mon">Mongolian</option>
-            <option value="nep">Nepali</option>
-            <option value="nor">Norwegian</option>
-            <option value="ori">Oriya</option>
-            <option value="fas">Persian</option>
-            <option value="pol">Polish</option>
-            <option value="por">Portuguese</option>
-            <option value="pan">Punjabi</option>
-            <option value="ron">Romanian</option>
-            <option value="rus">Russian</option>
-            <option value="srp">Serbian</option>
-            <option value="snd">Sindhi</option>
-            <option value="sin">Sinhala</option>
-            <option value="slk">Slovak</option>
-            <option value="slv">Slovenian</option>
-            <option value="spa">Spanish</option>
-            <option value="sun">Sundanese</option>
-            <option value="swa">Swahili</option>
-            <option value="swe">Swedish</option>
-            <option value="tgk">Tajik</option>
-            <option value="tam">Tamil</option>
-            <option value="tat">Tatar</option>
-            <option value="tel">Telugu</option>
-            <option value="tha">Thai</option>
-            <option value="bod">Tibetan</option>
-            <option value="tur">Turkish</option>
-            <option value="ukr">Ukrainian</option>
-            <option value="urd">Urdu</option>
-            <option value="uzb">Uzbek</option>
-            <option value="cym">Welsh</option>
-            <option value="yid">Yiddish</option>
-            <option value="yor">Yoruba</option>
           </select>
         </div>
         <div class="field">
-          <label><input id="ocrWordImages" type="checkbox" checked> Detect text inside Word images</label>
+          <label for="embedImageOpt">
+            <input id="embedImageOpt" type="checkbox" checked> Embed Source Image in Word
+          </label>
         </div>
         <div class="field">
           <label>Selected File</label>
@@ -222,19 +118,11 @@
         <div class="status" id="status" role="status" aria-live="polite">Waiting for a file.</div>
       </aside>
     </section>
-    <footer>ALL HTML BY NINJA • discord: ninjaiscook & peakestguy</footer>
-    <footer>Github Link To Download HTML: "https://github.com/NINJAPIANO-VN/pdf-to-word"</footer>
-    <footer>yup i do free and jst use that <3</footer>
-    <footer>DON'T FORGOT CREDIT WHO CREATE THIS HTML</footer>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.6/dist/docx-preview.min.js"></script>
-  <script>window.docxPreview = window.docx;</script>
   <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
@@ -245,624 +133,147 @@
     const progressBar = document.getElementById('progressBar');
     const documentName = document.getElementById('documentName');
     const ocrLanguage = document.getElementById('ocrLanguage');
-    const ocrWordImages = document.getElementById('ocrWordImages');
-    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    const embedImageOpt = document.getElementById('embedImageOpt');
     let selectedFile = null;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    const ALL_OCR_LANGS = 'eng+vie+fra+deu+spa+ita+por+rus+chi_sim+chi_tra+jpn+kor+ara+hin+tha+tur+nld+pol+ukr+swe+dan+fin+nor+ces+ron+hun+ell+heb+ind+msa+fil';
-
-    function capitalizeFirstLetter(string) {
-      if (!string) return '';
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    function getSelectedOcrLanguage() {
-      const val = ocrLanguage.value;
-      return val === 'auto' ? ALL_OCR_LANGS : val;
-    }
-
-    function setStatus(message, type = '') {
-      status.textContent = message;
+    function setStatus(msg, type = '') {
+      status.textContent = msg;
       status.dataset.type = type;
     }
 
     function chooseFile(file) {
       if (!file) return;
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      const isDocx = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.toLowerCase().endsWith('.docx');
-      const isImage = file.type.startsWith('image/');
-      if (!isPdf && !isDocx && !isImage) {
-        setStatus('Please select a PDF, DOCX, PNG, JPG, or WEBP file.', 'error');
-        return;
-      }
       selectedFile = file;
-      const baseName = file.name.replace(/\.(pdf|docx|png|jpe?g|webp)$/i, '');
-      documentName.value = capitalizeFirstLetter(baseName || 'converted-document');
-      fileInfo.innerHTML = '<strong>' + escapeHtml(file.name) + '</strong>' + formatBytes(file.size);
+      documentName.value = file.name.replace(/\.[^/.]+$/, "");
+      fileInfo.innerHTML = '<strong>' + file.name + '</strong>' + (file.size / 1024 / 1024).toFixed(2) + ' MB';
       convertButton.disabled = false;
-      setStatus(isDocx ? 'Ready to export as PDF.' : 'Ready to convert to Word.');
-    }
-
-    function escapeHtml(value) {
-      return value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
-    }
-
-    function formatBytes(bytes) {
-      if (bytes < 1024) return bytes + ' bytes';
-      return (bytes / 1024 / 1024).toFixed(2) + ' MB';
-    }
-
-    function detectLanguage(text) {
-      if (/[\u3040-\u30ff]/.test(text)) return 'Japanese';
-      if (/[\uac00-\ud7af]/.test(text)) return 'Korean';
-      if (/[\u0600-\u06ff]/.test(text)) return 'Arabic';
-      if (/[\u0e00-\u0e7f]/.test(text)) return 'Thai';
-      if (/[\u0400-\u04ff]/.test(text)) return 'Russian';
-      if (/[\u4e00-\u9fff]/.test(text)) return 'Chinese';
-      if (/[ăâđêôơưĂÂĐÊÔƠƯ]/.test(text) || /\b(được|không|của|một|tiếng|và)\b/i.test(text)) return 'Vietnamese';
-      return 'English/Latin';
-    }
-
-    function preprocessImageForOCR(imageSource) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const maxDim = 2400;
-          let width = img.width;
-          let height = img.height;
-          
-          if (width > maxDim || height > maxDim) {
-            if (width > height) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            } else {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const imageData = ctx.getImageData(0, 0, width, height);
-          const data = imageData.data;
-          
-          let sumBrightness = 0;
-          for (let i = 0; i < data.length; i += 4) {
-            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-            sumBrightness += gray;
-          }
-          const avgBrightness = sumBrightness / (data.length / 4);
-          const threshold = avgBrightness > 128 ? 140 : 110;
-
-          for (let i = 0; i < data.length; i += 4) {
-            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-            const contrastVal = (gray - threshold) * 1.5 + 128;
-            const finalVal = Math.max(0, Math.min(255, contrastVal));
-            
-            data[i] = finalVal;
-            data[i + 1] = finalVal;
-            data[i + 2] = finalVal;
-          }
-
-          ctx.putImageData(imageData, 0, 0);
-          resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = () => reject(new Error('Failed to load image for preprocessing.'));
-        
-        if (imageSource instanceof Blob) {
-          img.src = URL.createObjectURL(imageSource);
-        } else if (typeof imageSource === 'string') {
-          img.src = imageSource;
-        } else {
-          img.src = imageSource.toDataURL();
-        }
-      });
-    }
-
-    function fontDescriptor(fontName, styles, commonObjs) {
-      const style = styles[fontName] || {};
-      let loadedFont = null;
-      if (commonObjs && typeof commonObjs.has === 'function' && commonObjs.has(fontName)) {
-        loadedFont = commonObjs.get(fontName);
-      }
-      return [
-        fontName, style.fontFamily, style.fontName, style.fontWeight, style.fontStyle,
-        loadedFont?.name, loadedFont?.loadedName, loadedFont?.fontFamily, loadedFont?.fontName,
-        loadedFont?.fontWeight, loadedFont?.fontStyle,
-        loadedFont?.bold || loadedFont?.black ? 'bold' : '',
-        loadedFont?.italic ? 'italic' : ''
-      ].filter(Boolean).join(' ');
-    }
-
-    function wordFontFamily(fontName, styles, commonObjs) {
-      const family = (styles[fontName]?.fontFamily || '').replace(/["']/g, '').trim();
-      const name = (styles[fontName]?.fontName || fontName || '').toLowerCase();
-      if (/calibri/i.test(family) || /calibri/i.test(name)) return 'Calibri';
-      if (/arial/i.test(family) || /arial/i.test(name)) return 'Arial';
-      if (/courier/i.test(family) || /courier/i.test(name)) return 'Courier New';
-      if (/georgia/i.test(family) || /georgia/i.test(name)) return 'Georgia';
-      if (/tahoma/i.test(family) || /tahoma/i.test(name)) return 'Tahoma';
-      if (/verdana/i.test(family) || /verdana/i.test(name)) return 'Verdana';
-      if (/sans-serif$/i.test(family)) return 'Arial';
-      if (/^monospace$/i.test(family)) return 'Consolas';
-      if (/^serif$/i.test(family)) return 'Times New Roman';
-      return family || 'Times New Roman';
-    }
-
-    function pdfFontStyles(fontName, styles, commonObjs) {
-      const descriptor = fontDescriptor(fontName, styles, commonObjs);
-      return {
-        bold: /bold|black|heavy|demi|semibold/i.test(descriptor),
-        italics: /italic|oblique/i.test(descriptor)
-      };
-    }
-
-    function colorValue(value) {
-      const number = Number(value);
-      if (!Number.isFinite(number)) return 0;
-      return Math.max(0, Math.min(255, Math.round(number <= 1 ? number * 255 : number)));
-    }
-
-    function rgbHex(red, green, blue) {
-      return [red, green, blue].map(colorValue).map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
-    }
-
-    function pdfColorFromOperator(fn, args) {
-      const values = Array.isArray(args?.[0]) ? args[0] : args;
-      if (!values?.length) return null;
-      if (fn === pdfjsLib.OPS.setFillGray) return rgbHex(values[0] * 255, values[0] * 255, values[0] * 255);
-      if (fn === pdfjsLib.OPS.setFillRGBColor || (fn === pdfjsLib.OPS.setFillColor && values.length === 3)) {
-        return rgbHex(values[0], values[1], values[2]);
-      }
-      if (fn === pdfjsLib.OPS.setFillCMYKColor && values.length === 4) {
-        const [c, m, y, k] = values.map(Number);
-        return rgbHex(255 * (1 - Math.min(1, c + k)), 255 * (1 - Math.min(1, m + k)), 255 * (1 - Math.min(1, y + k)));
-      }
-      return null;
-    }
-
-    async function pdfTextColors(page, itemCount) {
-      const operatorList = await page.getOperatorList();
-      const textOperators = new Set([
-        pdfjsLib.OPS.showText,
-        pdfjsLib.OPS.showSpacedText,
-        pdfjsLib.OPS.nextLineShowText,
-        pdfjsLib.OPS.nextLineSetSpacingShowText
-      ]);
-      const colors = [];
-      let currentColor = null;
-      let itemIndex = 0;
-      operatorList.fnArray.forEach((fn, index) => {
-        const color = pdfColorFromOperator(fn, operatorList.argsArray[index]);
-        if (color) currentColor = color;
-        if (textOperators.has(fn) && itemIndex < itemCount) colors[itemIndex++] = currentColor;
-      });
-      return colors;
-    }
-
-    function itemHasUnderline(item, annotations) {
-      if (/underline|underlined/i.test(item.fontName || '')) return true;
-      const itemHeight = Math.max(8, Math.hypot(item.transform[0], item.transform[1]));
-      const itemLeft = item.transform[4];
-      const itemRight = itemLeft + item.width;
-      const itemBottom = item.transform[5] - itemHeight * .45;
-      const itemTop = item.transform[5] + itemHeight * .2;
-      return annotations.some(annotation => {
-        if (annotation.subtype !== 'Underline' || !annotation.rect) return false;
-        const [firstX, firstY, secondX, secondY] = annotation.rect;
-        const left = Math.min(firstX, secondX);
-        const right = Math.max(firstX, secondX);
-        const bottom = Math.min(firstY, secondY);
-        const top = Math.max(firstY, secondY);
-        return right >= itemLeft && left <= itemRight && top >= itemBottom && bottom <= itemTop;
-      });
-    }
-
-    function detectAlignment(lineItems, pageWidth = 600) {
-      if (!lineItems.length) return docx.AlignmentType.LEFT;
-      const minX = lineItems[0].x;
-      const maxX = lineItems[lineItems.length - 1].x + lineItems[lineItems.length - 1].width;
-      const lineWidth = maxX - minX;
-      const leftMargin = minX;
-      const rightMargin = pageWidth - maxX;
-
-      if (lineWidth > pageWidth * 0.75 && Math.abs(leftMargin - rightMargin) < 40) {
-        return docx.AlignmentType.JUSTIFIED;
-      }
-      if (Math.abs(leftMargin - rightMargin) < 35 && lineWidth < pageWidth * 0.75) {
-        return docx.AlignmentType.CENTER;
-      }
-      if (rightMargin < 40 && leftMargin > 100) {
-        return docx.AlignmentType.RIGHT;
-      }
-      return docx.AlignmentType.LEFT;
-    }
-
-    function pdfItemsToParagraphs(items, styles, commonObjs, annotations = [], colors = [], pageWidth = 600) {
-      const lines = [];
-      items
-        .map((item, itemIndex) => {
-          const fontScale = Math.hypot(item.transform[0], item.transform[1]);
-          return {
-            ...item,
-            itemIndex,
-            x: item.transform[4],
-            y: item.transform[5],
-            size: Math.max(8, Math.round(fontScale * 2))
-          };
-        })
-        .filter(item => item.str)
-        .sort((first, second) => second.y - first.y || first.x - second.x)
-        .forEach(item => {
-          let line = lines.find(candidate => Math.abs(candidate.y - item.y) <= 3);
-          if (!line) {
-            line = { y: item.y, items: [] };
-            lines.push(line);
-          }
-          line.items.push(item);
-        });
-
-      return lines
-        .sort((first, second) => second.y - first.y)
-        .map(line => {
-          line.items.sort((first, second) => first.x - second.x);
-          const alignment = detectAlignment(line.items, pageWidth);
-          const runs = [];
-          line.items.forEach(item => {
-            const previous = runs[runs.length - 1];
-            const gap = previous ? item.x - previous.endX : 0;
-            const needsSpace = previous && gap > item.size * 0.15 && !previous.text.endsWith(' ') && !item.str.startsWith(' ');
-            const fontName = item.fontName || '';
-            const fontStyles = pdfFontStyles(fontName, styles, commonObjs);
-            runs.push({
-              text: (needsSpace ? ' ' : '') + item.str,
-              endX: item.x + item.width,
-              bold: fontStyles.bold,
-              italics: fontStyles.italics,
-              underline: itemHasUnderline(item, annotations),
-              color: colors[item.itemIndex] || undefined,
-              font: wordFontFamily(fontName, styles, commonObjs),
-              size: item.size
-            });
-          });
-          return new docx.Paragraph({
-            alignment,
-            spacing: { before: 0, after: 0 },
-            children: runs.map(run => new docx.TextRun({
-              text: run.text,
-              bold: run.bold,
-              italics: run.italics,
-              underline: run.underline ? { type: docx.UnderlineType.SINGLE } : undefined,
-              color: run.color,
-              font: run.font,
-              size: run.size
-            }))
-          });
-        });
-    }
-
-    function ocrLinesToParagraphs(lines) {
-      if (!lines || !lines.length) return [];
-      return lines.map(line => {
-        let align = docx.AlignmentType.LEFT;
-        if (line.align === 'center') align = docx.AlignmentType.CENTER;
-        if (line.align === 'right') align = docx.AlignmentType.RIGHT;
-
-        const words = line.words || [];
-        const isBold = words.some(w => w.font_weight === 'bold');
-        const isItalic = words.some(w => w.font_style === 'italic');
-        const avgFontSize = words.length > 0 
-          ? Math.round(words.reduce((sum, w) => sum + (w.font_size || 12), 0) / words.length * 1.5)
-          : 24;
-
-        return new docx.Paragraph({
-          alignment: align,
-          spacing: { before: 60, after: 60 },
-          children: [
-            new docx.TextRun({
-              text: line.text,
-              bold: isBold,
-              italics: isItalic,
-              size: Math.max(16, Math.min(72, avgFontSize))
-            })
-          ]
-        });
-      });
-    }
-
-    function textToParagraphs(text) {
-      return text.replace(/\r/g, '').split('\n').map(line => new docx.Paragraph({
-        alignment: docx.AlignmentType.LEFT,
-        text: line
-      }));
-    }
-
-    async function extractImagesFromDocx(file) {
-      try {
-        const zip = await JSZip.loadAsync(file);
-        const images = [];
-        const mediaFiles = Object.keys(zip.files).filter(filename => filename.startsWith('word/media/'));
-        for (const filename of mediaFiles) {
-          const blob = await zip.files[filename].async('blob');
-          images.push(blob);
-        }
-        return images;
-      } catch (err) {
-        console.warn('Unable to extract images from DOCX file archive:', err);
-        return [];
-      }
-    }
-
-    async function convertWordToPdf(file, name, language, detectImages) {
-      if (typeof docxPreview === 'undefined' || typeof html2pdf === 'undefined' || (detectImages && typeof Tesseract === 'undefined')) {
-        throw new Error('Required conversion libraries failed to load. Please check your internet connection.');
-      }
-      const printable = document.createElement('article');
-      printable.style.cssText = 'width: 190mm; margin: 0 auto; padding: 0; color: #000; background: #fff; font-family: "Times New Roman", Arial, sans-serif; font-size: 11pt; line-height: 1.45; border: none !important; box-shadow: none !important;';
-
-      const fileBuffer = await file.arrayBuffer();
-      await docxPreview.renderAsync(fileBuffer, printable, null, {
-        ignoreWidth: false,
-        ignoreHeight: true,
-        breakPages: false,
-        renderHeaders: false,
-        renderFooters: false,
-        renderFootnotes: true,
-        experimental: false
-      });
-
-      printable.querySelectorAll('header, footer, .docx-header, .docx-footer, .docx-wrapper > section > header, .docx-wrapper > section > footer').forEach(el => el.remove());
-
-      printable.querySelectorAll('svg, rect, path, hr, div[style*="background"], div[style*="border"], span[style*="border"], svg rect, shape, v\\:rect, v\\:shape').forEach(el => {
-        const isSvg = el.tagName.toLowerCase() === 'svg' || el.tagName.toLowerCase() === 'rect' || el.tagName.toLowerCase() === 'path';
-        const isLine = el.tagName.toLowerCase() === 'hr';
-        const style = window.getComputedStyle(el);
-        const hasDarkBg = style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)' && style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgb(255, 255, 255)';
-        if (isSvg || isLine || hasDarkBg) {
-          el.remove();
-        }
-      });
-
-      if (!printable.textContent.trim() && !printable.querySelector('img, table')) {
-        throw new Error('No readable content was found in this Word document.');
-      }
-
-      const container = document.createElement('div');
-      container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 190mm; background: #fff; border: none; padding: 0; margin: 0;';
-      container.appendChild(printable);
-      document.body.appendChild(container);
-
-      try {
-        printable.querySelectorAll('*').forEach(el => {
-          el.style.borderTop = 'none';
-          el.style.borderBottom = 'none';
-          el.style.boxShadow = 'none';
-          el.style.outline = 'none';
-          if (el.tagName.toLowerCase() === 'hr') {
-            el.remove();
-          }
-        });
-
-        printable.querySelectorAll('img').forEach(image => {
-          image.style.maxWidth = '100%';
-          image.style.height = 'auto';
-        });
-
-        if (detectImages) {
-          setStatus('Extracting embedded images from document...');
-          const extractedImages = await extractImagesFromDocx(file);
-          if (extractedImages.length > 0) {
-            const ocrLang = getSelectedOcrLanguage();
-            const ocrResults = [];
-            for (let i = 0; i < extractedImages.length; i++) {
-              setStatus('Detecting text in image ' + (i + 1) + ' of ' + extractedImages.length + '...');
-              try {
-                const processedSrc = await preprocessImageForOCR(extractedImages[i]);
-                const res = await Tesseract.recognize(processedSrc, ocrLang);
-                if (res.data && res.data.text.trim()) {
-                  ocrResults.push(res.data.text.trim());
-                }
-              } catch (e) {
-                console.warn('OCR processing failed for image', e);
-              }
-              progressBar.style.width = Math.round(8 + ((i + 1) / extractedImages.length) * 42) + '%';
-            }
-            if (ocrResults.length > 0) {
-              const ocrBlock = document.createElement('div');
-              ocrBlock.className = 'ocr-result';
-              ocrBlock.innerHTML = '<strong>[OCR Detected Text from Images]</strong><br>' + escapeHtml(ocrResults.join('\n\n'));
-              printable.appendChild(ocrBlock);
-            }
-          }
-        }
-
-        printable.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => heading.style.pageBreakAfter = 'avoid');
-        printable.querySelectorAll('table').forEach(table => {
-          table.style.width = '100%';
-          table.style.borderCollapse = 'collapse';
-        });
-        printable.querySelectorAll('td, th').forEach(cell => {
-          cell.style.border = '1px solid #999';
-          cell.style.padding = '4px 6px';
-        });
-
-        const selectedFormat = pageSizeSelect.value.toLowerCase();
-
-        await html2pdf().set({
-          margin: [12, 12, 12, 12],
-          filename: name + '.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false },
-          jsPDF: { unit: 'mm', format: selectedFormat, orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'] }
-        }).from(printable).save();
-      } finally {
-        container.remove();
-      }
+      setStatus('File ready to process.');
     }
 
     chooseButton.addEventListener('click', () => fileInput.click());
-    dropzone.addEventListener('click', event => {
-      if (event.target === dropzone || event.target.closest('.drop-content')) fileInput.click();
-    });
-    dropzone.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') fileInput.click();
-    });
-    fileInput.addEventListener('change', event => chooseFile(event.target.files[0]));
-    ['dragenter', 'dragover'].forEach(eventName => dropzone.addEventListener(eventName, event => {
-      event.preventDefault();
-      dropzone.classList.add('is-over');
-    }));
-    ['dragleave', 'drop'].forEach(eventName => dropzone.addEventListener(eventName, event => {
-      event.preventDefault();
-      dropzone.classList.remove('is-over');
-    }));
-    dropzone.addEventListener('drop', event => chooseFile(event.dataTransfer.files[0]));
+    dropzone.addEventListener('click', (e) => { if (e.target === dropzone || e.target.closest('.drop-content')) fileInput.click(); });
+    fileInput.addEventListener('change', e => chooseFile(e.target.files[0]));
 
     convertButton.addEventListener('click', async () => {
       if (!selectedFile) return;
       convertButton.disabled = true;
-      const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
-      const isDocx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || selectedFile.name.toLowerCase().endsWith('.docx');
-      const language = ocrLanguage.value;
-      const ocrLanguageCode = getSelectedOcrLanguage();
-
-      setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Optimizing and detecting text in image...');
-      progressBar.style.width = '4%';
+      setStatus('Analyzing image structure...');
+      progressBar.style.width = '10%';
 
       try {
-        if (isDocx) {
-          setStatus('Generating PDF...');
-          const rawName = documentName.value.trim() || 'converted-document';
-          const outputName = capitalizeFirstLetter(rawName.replace(/\.pdf$/i, ''));
-          await convertWordToPdf(selectedFile, outputName, language, ocrWordImages.checked);
-          progressBar.style.width = '100%';
-          setStatus('PDF generated and downloaded successfully.', 'success');
-          return;
-        }
+        if (selectedFile.type.startsWith('image/')) {
+          const imageBitmap = await createImageBitmap(selectedFile);
+          const imgWidth = imageBitmap.width;
+          const imgHeight = imageBitmap.height;
 
-        let children;
-        let sections;
+          // Perform OCR with detailed word/line layout output
+          const worker = await Tesseract.createWorker(ocrLanguage.value);
+          progressBar.style.width = '30%';
+          setStatus('Detecting numbers, font sizes, alignment, and positions...');
+          
+          const ret = await worker.recognize(selectedFile);
+          await worker.terminate();
+          progressBar.style.width = '70%';
 
-        if (isPdf) {
-          const pdf = await pdfjsLib.getDocument({ data: await selectedFile.arrayBuffer() }).promise;
-          const pdfPages = [];
-          for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-            const page = await pdf.getPage(pageNumber);
-            const content = await page.getTextContent();
-            const annotations = await page.getAnnotations({ intent: 'display' });
-            const colors = await pdfTextColors(page, content.items.length);
-            const text = content.items.map(item => item.str).join('');
-            const viewport = page.getViewport({ scale: 1 });
+          const elements = [];
 
-            if (text.length > 0) {
-              if (language === 'auto') setStatus('Detected language: ' + detectLanguage(text) + '. Parsing layout...');
-              pdfPages.push({
-                width: Math.round(viewport.width * 20),
-                height: Math.round(viewport.height * 20),
-                children: pdfItemsToParagraphs(content.items, content.styles, page.commonObjs, annotations, colors, viewport.width)
-              });
-            }
-            progressBar.style.width = Math.round((pageNumber / pdf.numPages) * 72) + '%';
+          // 1. Embed Source Image if option checked
+          if (embedImageOpt.checked) {
+            const imageBuffer = await selectedFile.arrayBuffer();
+            elements.push(
+              new docx.Paragraph({
+                alignment: docx.AlignmentType.CENTER,
+                spacing: { after: 300 },
+                children: [
+                  new docx.ImageRun({
+                    data: imageBuffer,
+                    transformation: {
+                      width: 500,
+                      height: Math.round((500 / imgWidth) * imgHeight)
+                    }
+                  })
+                ]
+              })
+            );
           }
 
-          if (!pdfPages.length) {
-            setStatus('No selectable text found. Performing optimized OCR scan across all pages...');
-            const ocrParagraphs = [];
-            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-              const page = await pdf.getPage(pageNumber);
-              const viewport = page.getViewport({ scale: 2.0 });
-              const canvas = document.createElement('canvas');
-              canvas.width = viewport.width;
-              canvas.height = viewport.height;
-              await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-              
-              const processedImageSrc = await preprocessImageForOCR(canvas);
-              const result = await Tesseract.recognize(processedImageSrc, ocrLanguageCode, {
-                logger: message => {
-                  if (message.status === 'recognizing text') {
-                    const pageProgress = (pageNumber - 1 + message.progress) / pdf.numPages;
-                    progressBar.style.width = Math.round(8 + pageProgress * 64) + '%';
-                  }
-                }
-              });
-              if (result.data.lines && result.data.lines.length > 0) {
-                ocrParagraphs.push(...ocrLinesToParagraphs(result.data.lines));
-              } else if (result.data.text.length > 0) {
-                ocrParagraphs.push(...textToParagraphs(result.data.text));
-              }
+          // 2. Parse Lines, Size, Font Weight, and Alignment
+          const lines = ret.data.lines || [];
+          lines.forEach(line => {
+            const lineText = line.text.trim();
+            if (!lineText) return;
+
+            const bbox = line.bbox;
+            const lineH = bbox.y1 - bbox.y0;
+            const lineW = bbox.x1 - bbox.x0;
+            const lineCenterX = bbox.x0 + lineW / 2;
+
+            // Calculate Font Size in Points (pt * 2 for docx half-points)
+            // Estimated mapping relative to full image height
+            let fontSizePt = Math.max(10, Math.round((lineH / imgHeight) * 500));
+            let docxFontSize = Math.min(144, Math.max(18, fontSizePt * 2));
+
+            // Determine Text Alignment based on line bounding box coordinates
+            let alignment = docx.AlignmentType.LEFT;
+            const leftMarginPercent = bbox.x0 / imgWidth;
+            const rightMarginPercent = (imgWidth - bbox.x1) / imgWidth;
+            const centerOffset = Math.abs(lineCenterX - imgWidth / 2) / imgWidth;
+
+            if (centerOffset < 0.08 && Math.abs(leftMarginPercent - rightMarginPercent) < 0.15) {
+              alignment = docx.AlignmentType.CENTER;
+            } else if (leftMarginPercent > 0.4 && rightMarginPercent < 0.1) {
+              alignment = docx.AlignmentType.RIGHT;
             }
-            if (!ocrParagraphs.length) throw new Error('No text was detected in this PDF file.');
-            children = ocrParagraphs;
-            sections = [{ children }];
-          } else {
-            sections = pdfPages.map(page => ({
+
+            // Detect Bold Weight & Numbers
+            const isHeader = fontSizePt >= 18 || lineH > (imgHeight * 0.04);
+            const isBold = isHeader || line.words.some(w => w.font_weight === 'bold');
+
+            elements.push(
+              new docx.Paragraph({
+                alignment: alignment,
+                spacing: { before: Math.round(docxFontSize * 4), after: Math.round(docxFontSize * 4) },
+                children: [
+                  new docx.TextRun({
+                    text: lineText,
+                    bold: isBold,
+                    size: docxFontSize,
+                    font: "Arial"
+                  })
+                ]
+              })
+            );
+          });
+
+          // 3. Package and Save Document
+          const doc = new docx.Document({
+            sections: [{
               properties: {
                 page: {
-                  size: { width: page.width, height: page.height },
                   margin: { top: 720, right: 720, bottom: 720, left: 720 }
                 }
               },
-              children: page.children
-            }));
-          }
-        } else {
-          setStatus('Preprocessing image for high-accuracy text detection...');
-          const processedImageSrc = await preprocessImageForOCR(selectedFile);
-          
-          const result = await Tesseract.recognize(processedImageSrc, ocrLanguageCode, {
-            logger: message => {
-              if (message.status === 'recognizing text') progressBar.style.width = Math.round(8 + message.progress * 64) + '%';
-            }
+              children: elements
+            }]
           });
 
-          if (!result.data || (!result.data.text && !result.data.lines.length)) {
-            throw new Error('No text found in this image.');
-          }
-          
-          if (language === 'auto') setStatus('Detected language: ' + detectLanguage(result.data.text) + '. Building Word document...');
-          
-          if (result.data.lines && result.data.lines.length > 0) {
-            children = ocrLinesToParagraphs(result.data.lines);
-          } else {
-            children = textToParagraphs(result.data.text);
-          }
-          
-          sections = [{ children }];
-        }
+          const blob = await docx.Packer.toBlob(doc);
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = (documentName.value.trim() || 'ocr-output') + '.docx';
+          link.click();
+          URL.revokeObjectURL(link.href);
 
-        setStatus('Generating Word document...');
-        const doc = new docx.Document({
-          styles: {
-            default: {
-              document: {
-                run: {
-                  font: 'Times New Roman',
-                  size: 24
-                }
-              }
-            }
-          },
-          sections
-        });
-        const blob = await docx.Packer.toBlob(doc);
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        const rawOutputName = documentName.value.trim() || 'converted-document';
-        link.download = capitalizeFirstLetter(rawOutputName.replace(/\.docx$/i, '')) + '.docx';
-        link.click();
-        URL.revokeObjectURL(link.href);
-        progressBar.style.width = '100%';
-        setStatus('Word document generated and downloaded successfully.', 'success');
-      } catch (error) {
-        progressBar.style.width = '0%';
-        setStatus(error.message || 'Conversion failed. Please try processing another file.', 'error');
+          progressBar.style.width = '100%';
+          setStatus('Successfully created Word document with layout and embedded image!', 'success');
+        } else {
+          setStatus('Please select an image file (PNG, JPG, WEBP) for OCR detection.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus('Error: ' + err.message, 'error');
       } finally {
         convertButton.disabled = false;
       }
