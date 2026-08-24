@@ -64,8 +64,9 @@
     .controls { padding: 23px; }
     .controls h3 { margin: 0 0 20px; font-size: 20px; font-weight: 600; }
     label { display: block; margin: 0 0 7px; color: var(--muted); font: 700 11px Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
-    input[type="text"] { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--line); color: var(--ink); background: #fcfdfc; font: 15px Arial, sans-serif; }
+    input[type="text"], select { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--line); color: var(--ink); background: #fcfdfc; font: 15px Arial, sans-serif; }
     input[type="text"]:focus { outline: 2px solid rgba(8, 127, 120, .22); border-color: var(--teal); }
+    select:focus { outline: 2px solid rgba(8, 127, 120, .22); border-color: var(--teal); }
     .field { margin-bottom: 18px; }
     .file-info { padding: 13px; color: var(--muted); background: #f7f2ea; font: 12px/1.45 Arial, sans-serif; word-break: break-word; }
     .file-info strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 3px; }
@@ -116,6 +117,27 @@
           <input id="documentName" type="text" value="converted-document" maxlength="80">
         </div>
         <div class="field">
+          <label for="ocrLanguage">OCR language</label>
+          <select id="ocrLanguage">
+            <option value="eng">English</option>
+            <option value="vie">Vietnamese</option>
+            <option value="eng+vie">English + Vietnamese</option>
+            <option value="spa">Spanish</option>
+            <option value="fra">French</option>
+            <option value="deu">German</option>
+            <option value="ita">Italian</option>
+            <option value="por">Portuguese</option>
+            <option value="rus">Russian</option>
+            <option value="ara">Arabic</option>
+            <option value="hin">Hindi</option>
+            <option value="tha">Thai</option>
+            <option value="chi_sim">Chinese (Simplified)</option>
+            <option value="chi_tra">Chinese (Traditional)</option>
+            <option value="jpn">Japanese</option>
+            <option value="kor">Korean</option>
+          </select>
+        </div>
+        <div class="field">
           <label>Selected file</label>
           <div class="file-info" id="fileInfo"><strong>No file selected</strong>Choose a file to begin.</div>
         </div>
@@ -124,7 +146,7 @@
         <div class="status" id="status" role="status" aria-live="polite">Waiting for a PDF or image.</div>
       </aside>
     </section>
-    <footer>Conversion happens locally. PDF text and Word formatting are preserved where the browser can read them; scanned pages use English OCR.</footer>
+    <footer>Conversion happens locally. PDF text and Word formatting are preserved where the browser can read them; scanned pages use the selected OCR language.</footer>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -144,6 +166,7 @@
     const status = document.getElementById('status');
     const progressBar = document.getElementById('progressBar');
     const documentName = document.getElementById('documentName');
+    const ocrLanguage = document.getElementById('ocrLanguage');
     let selectedFile = null;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -419,6 +442,7 @@
       convertButton.disabled = true;
       const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
       const isDocx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || selectedFile.name.toLowerCase().endsWith('.docx');
+      const language = ocrLanguage.value;
       setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Detecting phrases in image...');
       progressBar.style.width = '4%';
       try {
@@ -461,7 +485,7 @@
               canvas.width = viewport.width;
               canvas.height = viewport.height;
               await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-              const result = await Tesseract.recognize(canvas, 'eng', {
+              const result = await Tesseract.recognize(canvas, language, {
                 logger: message => {
                   if (message.status === 'recognizing text') {
                     const pageProgress = (pageNumber - 1 + message.progress) / pdf.numPages;
@@ -486,7 +510,7 @@
             }));
           }
         } else {
-          const result = await Tesseract.recognize(selectedFile, 'eng', {
+          const result = await Tesseract.recognize(selectedFile, language, {
             logger: message => {
               if (message.status === 'recognizing text') progressBar.style.width = Math.round(8 + message.progress * 64) + '%';
             }
