@@ -173,7 +173,7 @@
       return (bytes / 1024 / 1024).toFixed(2) + ' MB';
     }
 
-    function pdfItemsToParagraphs(items) {
+    function pdfItemsToParagraphs(items, styles) {
       const lines = [];
       items
         .filter(item => item.str)
@@ -208,14 +208,26 @@
               endX: item.x + item.width,
               bold: /bold|black|heavy|demi|semibold/i.test(fontName),
               italics: /italic|oblique/i.test(fontName),
-              font: 'Times New Roman',
+              font: styles[fontName]?.fontFamily || 'Times New Roman',
               size: item.size
             });
           });
           return new docx.Paragraph({
-            children: runs.map(run => new docx.TextRun(run))
+            indent: { left: Math.max(0, Math.round(line.items[0].x * 20)) },
+            spacing: { before: 0, after: 0 },
+            children: runs.map(run => new docx.TextRun({
+              text: run.text,
+              bold: run.bold,
+              italics: run.italics,
+              font: run.font,
+              size: run.size
+            }))
           });
         });
+    }
+
+    function textToParagraphs(text) {
+      return text.replace(/\r/g, '').split('\n').map(line => new docx.Paragraph({ text: line }));
     }
 
     chooseButton.addEventListener('click', () => fileInput.click());
@@ -257,7 +269,7 @@
               pdfPages.push({
                 width: Math.round(viewport.width * 20),
                 height: Math.round(viewport.height * 20),
-                children: pdfItemsToParagraphs(content.items)
+                children: pdfItemsToParagraphs(content.items, content.styles)
               });
             }
             progressBar.style.width = Math.round((pageNumber / pdf.numPages) * 72) + '%';
@@ -283,7 +295,7 @@
               if (result.data.text.length > 0) ocrParagraphs.push({ pageNumber, text: result.data.text });
             }
             if (!ocrParagraphs.length) throw new Error('No text was found in this PDF.');
-            children = ocrParagraphs.map(paragraph => new docx.Paragraph({ text: paragraph.text }));
+            children = ocrParagraphs.flatMap(paragraph => textToParagraphs(paragraph.text));
             sections = [{ children }];
           } else {
             sections = pdfPages.map(page => ({
@@ -303,7 +315,7 @@
             }
           });
           if (!result.data.text) throw new Error('No text was found in this image.');
-          children = [new docx.Paragraph({ text: result.data.text })];
+          children = textToParagraphs(result.data.text);
           sections = [{ children }];
         }
         setStatus('Building Word document...');
