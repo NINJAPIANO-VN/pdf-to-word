@@ -346,11 +346,28 @@
       if (typeof mammoth === 'undefined' || typeof html2pdf === 'undefined') {
         throw new Error('Word-to-PDF libraries could not be loaded. Check your internet connection.');
       }
-      const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+      const result = await mammoth.convertToHtml({
+        arrayBuffer: await file.arrayBuffer()
+      }, {
+        convertImage: mammoth.images.imgElement(image => image.read('base64').then(base64 => ({
+          src: 'data:' + image.contentType + ';base64,' + base64
+        })))
+      });
       if (!result.value.trim()) throw new Error('No readable text was found in this Word document.');
       const printable = document.createElement('article');
       printable.innerHTML = result.value;
       printable.style.cssText = 'width: 180mm; padding: 0; color: #000; background: #fff; font: 11pt Arial, sans-serif; line-height: 1.45;';
+      printable.querySelectorAll('img').forEach(image => {
+        image.style.maxWidth = '100%';
+        image.style.height = 'auto';
+      });
+      printable.querySelectorAll('a').forEach(link => {
+        link.style.color = '#0563c1';
+        link.style.textDecoration = 'underline';
+      });
+      printable.querySelectorAll('ul, ol').forEach(list => {
+        list.style.paddingLeft = '24px';
+      });
       printable.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
         heading.style.pageBreakAfter = 'avoid';
       });
