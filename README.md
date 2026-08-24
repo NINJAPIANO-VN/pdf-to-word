@@ -1,16 +1,17 @@
 # PDF to Word
 
-A browser-only converter that supports:
+A browser-only converter featuring:
 
-- PDF text to Word, preserving the PDF text layer as provided
-- Scanned PDF pages to editable text with OCR
-- Image to editable text with OCR
-- Original image embedded in Word
+- PDF-to-Word conversion, preserving the original text layout and layer
 
-## Publish website 24/7
+- OCR text extraction for scanned PDF pages
 
-This is a website.
+- Image-to-text OCR for images (PNG, JPG, WEBP)
 
-## CLICK HERE: "https://pdf-to-word.thanhthesieubells.workers.dev/"
+- Word-to-PDF export, including OCR text extraction for embedded images
 
-This website loads PDF.js, docx, and Tesseract.js from public CDNs, so the deployed page needs internet access.
+## This is a website. (24/7) CLICK HERE: "https://pdf-to-word.thanhthesieubells.workers.dev/"
+## YOU CAN DOWNLOAD FOR FREE !!
+i need money 😭
+
+
