@@ -9,7 +9,7 @@ A browser-only converter that supports:
 
 ## Publish website 24/7
 
-This is a website. Upload the contents of this folder to any static host:
+This is a website.
 
 ## CLICK HERE: "https://pdf-to-word.thanhthesieubells.workers.dev/"
 
