@@ -191,7 +191,7 @@
         loadedFont?.fontName,
         loadedFont?.fontWeight,
         loadedFont?.fontStyle,
-        loadedFont?.bold ? 'bold' : '',
+        loadedFont?.bold || loadedFont?.black ? 'bold' : '',
         loadedFont?.italic ? 'italic' : ''
       ].filter(Boolean).join(' ');
     }
@@ -212,6 +212,49 @@
       };
     }
 
+    function colorValue(value) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return 0;
+      return Math.max(0, Math.min(255, Math.round(number <= 1 ? number * 255 : number)));
+    }
+
+    function rgbHex(red, green, blue) {
+      return [red, green, blue].map(colorValue).map(value => value.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    function pdfColorFromOperator(fn, args) {
+      const values = Array.isArray(args?.[0]) ? args[0] : args;
+      if (!values?.length) return null;
+      if (fn === pdfjsLib.OPS.setFillGray) return rgbHex(values[0] * 255, values[0] * 255, values[0] * 255);
+      if (fn === pdfjsLib.OPS.setFillRGBColor || (fn === pdfjsLib.OPS.setFillColor && values.length === 3)) {
+        return rgbHex(values[0], values[1], values[2]);
+      }
+      if (fn === pdfjsLib.OPS.setFillCMYKColor && values.length === 4) {
+        const [cyan, magenta, yellow, black] = values.map(Number);
+        return rgbHex(255 * (1 - Math.min(1, cyan + black)), 255 * (1 - Math.min(1, magenta + black)), 255 * (1 - Math.min(1, yellow + black)));
+      }
+      return null;
+    }
+
+    async function pdfTextColors(page, itemCount) {
+      const operatorList = await page.getOperatorList();
+      const textOperators = new Set([
+        pdfjsLib.OPS.showText,
+        pdfjsLib.OPS.showSpacedText,
+        pdfjsLib.OPS.nextLineShowText,
+        pdfjsLib.OPS.nextLineSetSpacingShowText
+      ]);
+      const colors = [];
+      let currentColor = null;
+      let itemIndex = 0;
+      operatorList.fnArray.forEach((fn, index) => {
+        const color = pdfColorFromOperator(fn, operatorList.argsArray[index]);
+        if (color) currentColor = color;
+        if (textOperators.has(fn) && itemIndex < itemCount) colors[itemIndex++] = currentColor;
+      });
+      return colors;
+    }
+
     function itemHasUnderline(item, annotations) {
       if (/underline|underlined/i.test(item.fontName || '')) return true;
       const itemHeight = Math.max(8, Math.hypot(item.transform[0], item.transform[1]));
@@ -230,16 +273,17 @@
       });
     }
 
-    function pdfItemsToParagraphs(items, styles, commonObjs, annotations = []) {
+    function pdfItemsToParagraphs(items, styles, commonObjs, annotations = [], colors = []) {
       const lines = [];
       items
-        .filter(item => item.str)
-        .map(item => ({
+        .map((item, itemIndex) => ({
           ...item,
+          itemIndex,
           x: item.transform[4],
           y: item.transform[5],
           size: Math.max(8, Math.round(Math.hypot(item.transform[0], item.transform[1]) * 2))
         }))
+        .filter(item => item.str)
         .sort((first, second) => second.y - first.y || first.x - second.x)
         .forEach(item => {
           let line = lines.find(candidate => Math.abs(candidate.y - item.y) <= 3);
@@ -267,6 +311,7 @@
               bold: fontStyles.bold,
               italics: fontStyles.italics,
               underline: itemHasUnderline(item, annotations),
+              color: colors[item.itemIndex] || undefined,
               font: wordFontFamily(fontName, styles, commonObjs),
               size: item.size
             });
@@ -279,6 +324,7 @@
               bold: run.bold,
               italics: run.italics,
               underline: run.underline ? { type: docx.UnderlineType.SINGLE } : undefined,
+              color: run.color,
               font: run.font,
               size: run.size
             }))
@@ -327,13 +373,14 @@
             const page = await pdf.getPage(pageNumber);
             const content = await page.getTextContent();
             const annotations = await page.getAnnotations({ intent: 'display' });
+            const colors = await pdfTextColors(page, content.items.length);
             const text = content.items.map(item => item.str).join('');
             if (text.length > 0) {
               const viewport = page.getViewport({ scale: 1 });
               pdfPages.push({
                 width: Math.round(viewport.width * 20),
                 height: Math.round(viewport.height * 20),
-                children: pdfItemsToParagraphs(content.items, content.styles, page.commonObjs, annotations)
+                children: pdfItemsToParagraphs(content.items, content.styles, page.commonObjs, annotations, colors)
               });
             }
             progressBar.style.width = Math.round((pageNumber / pdf.numPages) * 72) + '%';
