@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF to Word</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #24201c;
+      --muted: #756d64;
+      --paper: #f5f0e8;
+      --panel: #ffffff;
+      --line: #ded4c6;
+      --teal: #9b773d;
+      --teal-dark: #745426;
+      --coral: #b89a69;
+      --shadow: 0 24px 70px rgba(76, 57, 31, .13);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Didot, 'Bodoni 72', 'Times New Roman', serif;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: .6;
+      background-image: linear-gradient(rgba(155, 119, 61, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(155, 119, 61, .05) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(to bottom, black, transparent 78%);
+    }
+
+    .shell { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 54px 0 70px; }
+    header { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin-bottom: 38px; }
+    .eyebrow { margin: 0 0 10px; color: var(--teal); font: 700 12px/1.2 Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
+    h1 { margin: 0; max-width: 530px; font-size: clamp(42px, 7vw, 72px); line-height: .92; letter-spacing: -.045em; font-weight: 600; }
+    .intro { max-width: 250px; margin: 8px 0 0; color: var(--muted); font-size: 17px; line-height: 1.45; }
+    .mark { flex: 0 0 auto; display: grid; place-items: center; width: 58px; height: 58px; border: 1px solid var(--teal); color: var(--teal); font: 700 16px Arial, sans-serif; transform: rotate(8deg); }
+
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; }
+    .dropzone, .controls { background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    .dropzone { min-height: 430px; display: grid; place-items: center; padding: 34px; border-top: 4px solid var(--teal); transition: border-color .2s, background .2s, transform .2s; }
+    .dropzone.is-over { border-color: var(--coral); background: #fcf8f0; transform: translateY(-3px); }
+    .drop-content { width: min(100%, 420px); text-align: center; }
+    .paper-icon { width: 72px; height: 88px; margin: 0 auto 24px; padding: 14px 11px; border: 1px solid var(--ink); position: relative; text-align: left; }
+    .paper-icon::before, .paper-icon::after { content: ''; display: block; width: 100%; height: 2px; margin: 9px 0; background: var(--coral); }
+    .paper-icon::after { width: 70%; }
+    .paper-icon span { position: absolute; right: -2px; top: -2px; width: 19px; height: 19px; border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink); background: var(--panel); }
+    h2 { margin: 0 0 10px; font-size: 29px; font-weight: 600; }
+    .drop-copy { margin: 0 auto 24px; color: var(--muted); font: 15px/1.5 Arial, sans-serif; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 46px; padding: 0 20px; border: 0; color: #fffaf2; background: var(--ink); cursor: pointer; font: 700 12px Arial, sans-serif; letter-spacing: .09em; text-transform: uppercase; transition: background .2s, transform .2s; }
+    .button:hover { background: var(--teal-dark); transform: translateY(-1px); }
+    .button:disabled { background: #aebdbb; cursor: not-allowed; transform: none; }
+    .hint { margin: 19px 0 0; color: #849092; font: 12px Arial, sans-serif; }
+
+    .controls { padding: 23px; }
+    .controls h3 { margin: 0 0 20px; font-size: 20px; font-weight: 600; }
+    label { display: block; margin: 0 0 7px; color: var(--muted); font: 700 11px Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+    input[type="text"] { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--line); color: var(--ink); background: #fcfdfc; font: 15px Arial, sans-serif; }
+    input[type="text"]:focus { outline: 2px solid rgba(8, 127, 120, .22); border-color: var(--teal); }
+    .field { margin-bottom: 18px; }
+    .file-info { padding: 13px; color: var(--muted); background: #f7f2ea; font: 12px/1.45 Arial, sans-serif; word-break: break-word; }
+    .file-info strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 3px; }
+    .status { min-height: 42px; margin-top: 20px; padding: 12px; border-left: 3px solid var(--coral); color: var(--muted); font: 12px/1.45 Arial, sans-serif; }
+    .status[data-type="success"] { border-color: var(--teal); color: var(--teal-dark); }
+    .status[data-type="error"] { color: #b34636; }
+    .progress { height: 4px; margin-top: 15px; overflow: hidden; background: #e7eeec; }
+    .progress span { display: block; width: 0; height: 100%; background: var(--coral); transition: width .2s; }
+
+    footer { margin-top: 19px; color: #849092; font: 12px Arial, sans-serif; }
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 24px, 560px); padding-top: 30px; }
+      header { margin-bottom: 27px; }
+      .intro { display: none; }
+      .mark { width: 46px; height: 46px; font-size: 13px; }
+      .workspace { grid-template-columns: 1fr; }
+      .dropzone { min-height: 360px; padding: 26px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">Document utility / 01</p>
+        <h1>PDF or image into a Word document.</h1>
+      </div>
+      <p class="intro">Pull selectable text from a PDF and package it into an editable .docx file, unchanged.</p>
+      <div class="mark" aria-hidden="true">PDF<br>→ DOCX</div>
+    </header>
+
+    <section class="workspace" aria-label="PDF conversion workspace">
+      <div class="dropzone" id="dropzone" tabindex="0">
+        <div class="drop-content">
+          <div class="paper-icon" aria-hidden="true"><span></span></div>
+          <h2>Drop your PDF or image here</h2>
+          <p class="drop-copy">Convert selectable PDF text or detect phrases in an image and export them as editable Word text.</p>
+          <button class="button" id="chooseButton" type="button"><span aria-hidden="true">↑</span> Choose file</button>
+          <input id="fileInput" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp" hidden>
+          <p class="hint">PDF, PNG, JPG, or WEBP · one file at a time</p>
+        </div>
+      </div>
+
+      <aside class="controls">
+        <h3>Export settings</h3>
+        <div class="field">
+          <label for="documentName">Document name</label>
+          <input id="documentName" type="text" value="converted-document" maxlength="80">
+        </div>
+        <div class="field">
+          <label>Selected file</label>
+          <div class="file-info" id="fileInfo"><strong>No file selected</strong>Choose a file to begin.</div>
+        </div>
+        <button class="button" id="convertButton" type="button" disabled>Convert to Word</button>
+        <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+        <div class="status" id="status" role="status" aria-live="polite">Waiting for a PDF or image.</div>
+      </aside>
+    </section>
+    <footer>Conversion happens locally. PDF text is preserved as provided; scanned pages and images use English OCR.</footer>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const chooseButton = document.getElementById('chooseButton');
+    const convertButton = document.getElementById('convertButton');
+    const fileInfo = document.getElementById('fileInfo');
+    const status = document.getElementById('status');
+    const progressBar = document.getElementById('progressBar');
+    const documentName = document.getElementById('documentName');
+    let selectedFile = null;
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    function setStatus(message, type = '') {
+      status.textContent = message;
+      status.dataset.type = type;
+    }
+
+    function chooseFile(file) {
+      if (!file) return;
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const isImage = file.type.startsWith('image/');
+      if (!isPdf && !isImage) {
+        setStatus('Please choose a PDF, PNG, JPG, or WEBP file.', 'error');
+        return;
+      }
+      selectedFile = file;
+      const baseName = file.name.replace(/\.(pdf|png|jpe?g|webp)$/i, '');
+      documentName.value = baseName || 'converted-document';
+      fileInfo.innerHTML = '<strong>' + escapeHtml(file.name) + '</strong>' + formatBytes(file.size);
+      convertButton.disabled = false;
+      setStatus('Ready to convert.');
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + ' bytes';
+      return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+    }
+
+    function pdfItemsToParagraphs(items) {
+      const lines = [];
+      items
+        .filter(item => item.str)
+        .map(item => ({
+          ...item,
+          x: item.transform[4],
+          y: item.transform[5],
+          size: Math.max(8, Math.round(Math.abs(item.transform[0] || item.transform[3] || 12) * 2))
+        }))
+        .sort((first, second) => second.y - first.y || first.x - second.x)
+        .forEach(item => {
+          let line = lines.find(candidate => Math.abs(candidate.y - item.y) <= 3);
+          if (!line) {
+            line = { y: item.y, items: [] };
+            lines.push(line);
+          }
+          line.items.push(item);
+        });
+
+      return lines
+        .sort((first, second) => second.y - first.y)
+        .map(line => {
+          line.items.sort((first, second) => first.x - second.x);
+          const runs = [];
+          line.items.forEach(item => {
+            const previous = runs[runs.length - 1];
+            const gap = previous ? item.x - previous.endX : 0;
+            const needsSpace = previous && gap > item.size * 0.15 && !previous.text.endsWith(' ') && !item.str.startsWith(' ');
+            const fontName = item.fontName || '';
+            runs.push({
+              text: (needsSpace ? ' ' : '') + item.str,
+              endX: item.x + item.width,
+              bold: /bold|black|heavy|demi|semibold/i.test(fontName),
+              italics: /italic|oblique/i.test(fontName),
+              font: 'Times New Roman',
+              size: item.size
+            });
+          });
+          return new docx.Paragraph({
+            children: runs.map(run => new docx.TextRun(run))
+          });
+        });
+    }
+
+    chooseButton.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('click', event => {
+      if (event.target === dropzone || event.target.closest('.drop-content')) fileInput.click();
+    });
+    dropzone.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') fileInput.click();
+    });
+    fileInput.addEventListener('change', event => chooseFile(event.target.files[0]));
+    ['dragenter', 'dragover'].forEach(eventName => dropzone.addEventListener(eventName, event => {
+      event.preventDefault();
+      dropzone.classList.add('is-over');
+    }));
+    ['dragleave', 'drop'].forEach(eventName => dropzone.addEventListener(eventName, event => {
+      event.preventDefault();
+      dropzone.classList.remove('is-over');
+    }));
+    dropzone.addEventListener('drop', event => chooseFile(event.dataTransfer.files[0]));
+
+    convertButton.addEventListener('click', async () => {
+      if (!selectedFile) return;
+      convertButton.disabled = true;
+      const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
+      setStatus(isPdf ? 'Reading PDF text...' : 'Detecting phrases in image...');
+      progressBar.style.width = '4%';
+      try {
+        let children;
+        let sections;
+        if (isPdf) {
+          const pdf = await pdfjsLib.getDocument({ data: await selectedFile.arrayBuffer() }).promise;
+          const pdfPages = [];
+          for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+            const page = await pdf.getPage(pageNumber);
+            const content = await page.getTextContent();
+            const text = content.items.map(item => item.str).join('');
+            if (text.length > 0) {
+              const viewport = page.getViewport({ scale: 1 });
+              pdfPages.push({
+                width: Math.round(viewport.width * 20),
+                height: Math.round(viewport.height * 20),
+                children: pdfItemsToParagraphs(content.items)
+              });
+            }
+            progressBar.style.width = Math.round((pageNumber / pdf.numPages) * 72) + '%';
+          }
+          if (!pdfPages.length) {
+            setStatus('No selectable text found. Running OCR on the PDF pages...');
+            const ocrParagraphs = [];
+            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+              const page = await pdf.getPage(pageNumber);
+              const viewport = page.getViewport({ scale: 1.5 });
+              const canvas = document.createElement('canvas');
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+              await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+              const result = await Tesseract.recognize(canvas, 'eng', {
+                logger: message => {
+                  if (message.status === 'recognizing text') {
+                    const pageProgress = (pageNumber - 1 + message.progress) / pdf.numPages;
+                    progressBar.style.width = Math.round(8 + pageProgress * 64) + '%';
+                  }
+                }
+              });
+              if (result.data.text.length > 0) ocrParagraphs.push({ pageNumber, text: result.data.text });
+            }
+            if (!ocrParagraphs.length) throw new Error('No text was found in this PDF.');
+            children = ocrParagraphs.map(paragraph => new docx.Paragraph({ text: paragraph.text }));
+            sections = [{ children }];
+          } else {
+            sections = pdfPages.map(page => ({
+              properties: {
+                page: {
+                  size: { width: page.width, height: page.height },
+                  margin: { top: 0, right: 0, bottom: 0, left: 0 }
+                }
+              },
+              children: page.children
+            }));
+          }
+        } else {
+          const result = await Tesseract.recognize(selectedFile, 'eng', {
+            logger: message => {
+              if (message.status === 'recognizing text') progressBar.style.width = Math.round(8 + message.progress * 64) + '%';
+            }
+          });
+          if (!result.data.text) throw new Error('No text was found in this image.');
+          children = [new docx.Paragraph({ text: result.data.text })];
+          sections = [{ children }];
+        }
+        setStatus('Building Word document...');
+        const doc = new docx.Document({
+          styles: {
+            default: {
+              document: {
+                run: {
+                  font: 'Times New Roman',
+                  size: 24
+                }
+              }
+            }
+          },
+          sections
+        });
+        const blob = await docx.Packer.toBlob(doc);
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = (documentName.value.trim() || 'converted-document').replace(/\.docx$/i, '') + '.docx';
+        link.click();
+        URL.revokeObjectURL(link.href);
+        progressBar.style.width = '100%';
+        setStatus('Word document downloaded.', 'success');
+      } catch (error) {
+        progressBar.style.width = '0%';
+        setStatus(error.message || 'Conversion failed. Please try another PDF.', 'error');
+      } finally {
+        convertButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
