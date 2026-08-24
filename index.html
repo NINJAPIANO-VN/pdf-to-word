@@ -173,6 +173,14 @@
       return (bytes / 1024 / 1024).toFixed(2) + ' MB';
     }
 
+    function wordFontFamily(fontName, styles) {
+      const family = (styles[fontName]?.fontFamily || '').replace(/["']/g, '').trim();
+      if (/^sans-serif$/i.test(family)) return 'Arial';
+      if (/^monospace$/i.test(family)) return 'Consolas';
+      if (/^serif$/i.test(family)) return 'Times New Roman';
+      return family || 'Times New Roman';
+    }
+
     function pdfItemsToParagraphs(items, styles) {
       const lines = [];
       items
@@ -208,13 +216,12 @@
               endX: item.x + item.width,
               bold: /bold|black|heavy|demi|semibold/i.test(fontName),
               italics: /italic|oblique/i.test(fontName),
-              font: styles[fontName]?.fontFamily || 'Times New Roman',
+              font: wordFontFamily(fontName, styles),
               size: item.size
             });
           });
           return new docx.Paragraph({
             alignment: docx.AlignmentType.CENTER,
-            indent: { left: Math.max(0, Math.round(line.items[0].x * 20)) },
             spacing: { before: 0, after: 0 },
             children: runs.map(run => new docx.TextRun({
               text: run.text,
