@@ -75,6 +75,7 @@
     .status[data-type="error"] { color: #b34636; }
     .progress { height: 4px; margin-top: 15px; overflow: hidden; background: #e7eeec; }
     .progress span { display: block; width: 0; height: 100%; background: var(--coral); transition: width .2s; }
+    .ocr-result { margin: 8px 0 16px; padding: 8px; border-left: 2px solid var(--teal); color: #333; background: #fafafa; white-space: pre-wrap; font: 10pt Arial, sans-serif; }
 
     footer { margin-top: 19px; color: #849092; font: 12px Arial, sans-serif; }
     @media (max-width: 700px) {
@@ -139,6 +140,9 @@
           </select>
         </div>
         <div class="field">
+          <label><input id="ocrWordImages" type="checkbox" checked> Detect text inside Word images</label>
+        </div>
+        <div class="field">
           <label>Selected file</label>
           <div class="file-info" id="fileInfo"><strong>No file selected</strong>Choose a file to begin.</div>
         </div>
@@ -168,6 +172,7 @@
     const progressBar = document.getElementById('progressBar');
     const documentName = document.getElementById('documentName');
     const ocrLanguage = document.getElementById('ocrLanguage');
+    const ocrWordImages = document.getElementById('ocrWordImages');
     let selectedFile = null;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -380,8 +385,8 @@
       }));
     }
 
-    async function convertWordToPdf(file, name) {
-      if (typeof docxPreview === 'undefined' || typeof html2pdf === 'undefined') {
+    async function convertWordToPdf(file, name, language, detectImages) {
+      if (typeof docxPreview === 'undefined' || typeof html2pdf === 'undefined' || (detectImages && typeof Tesseract === 'undefined')) {
         throw new Error('Word-to-PDF libraries could not be loaded. Check your internet connection.');
       }
       const printable = document.createElement('article');
@@ -402,6 +407,20 @@
         image.style.maxWidth = '100%';
         image.style.height = 'auto';
       });
+      if (detectImages) {
+        const images = Array.from(printable.querySelectorAll('img'));
+        for (let imageIndex = 0; imageIndex < images.length; imageIndex += 1) {
+          setStatus('Detecting text in Word image ' + (imageIndex + 1) + ' of ' + images.length + '...');
+          const result = await Tesseract.recognize(images[imageIndex], language === 'auto' ? 'eng+vie' : language);
+          if (result.data.text.trim()) {
+            const detectedText = document.createElement('div');
+            detectedText.className = 'ocr-result';
+            detectedText.textContent = result.data.text.trim();
+            images[imageIndex].insertAdjacentElement('afterend', detectedText);
+          }
+          progressBar.style.width = Math.round(8 + ((imageIndex + 1) / images.length) * 42) + '%';
+        }
+      }
       printable.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
         heading.style.pageBreakAfter = 'avoid';
       });
@@ -462,7 +481,7 @@
         if (isDocx) {
           setStatus('Building PDF...');
           const outputName = (documentName.value.trim() || 'converted-document').replace(/\.pdf$/i, '');
-          await convertWordToPdf(selectedFile, outputName);
+          await convertWordToPdf(selectedFile, outputName, language, ocrWordImages.checked);
           progressBar.style.width = '100%';
           setStatus('PDF downloaded.', 'success');
           return;
