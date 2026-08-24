@@ -119,6 +119,7 @@
         <div class="field">
           <label for="ocrLanguage">OCR language</label>
           <select id="ocrLanguage">
+            <option value="auto">Auto-detect</option>
             <option value="eng">English</option>
             <option value="vie">Vietnamese</option>
             <option value="eng+vie">English + Vietnamese</option>
@@ -200,6 +201,17 @@
     function formatBytes(bytes) {
       if (bytes < 1024) return bytes + ' bytes';
       return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+    }
+
+    function detectLanguage(text) {
+      if (/[\u3040-\u30ff]/.test(text)) return 'Japanese';
+      if (/[\uac00-\ud7af]/.test(text)) return 'Korean';
+      if (/[\u0600-\u06ff]/.test(text)) return 'Arabic';
+      if (/[\u0e00-\u0e7f]/.test(text)) return 'Thai';
+      if (/[\u0400-\u04ff]/.test(text)) return 'Russian';
+      if (/[\u4e00-\u9fff]/.test(text)) return 'Chinese';
+      if (/[ăâđêôơưĂÂĐÊÔƠƯ]/.test(text) || /\b(được|không|của|một|tiếng|và)\b/i.test(text)) return 'Vietnamese';
+      return 'English/Latin';
     }
 
     function fontDescriptor(fontName, styles, commonObjs) {
@@ -443,6 +455,7 @@
       const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
       const isDocx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || selectedFile.name.toLowerCase().endsWith('.docx');
       const language = ocrLanguage.value;
+      const ocrLanguageCode = language === 'auto' ? 'eng+vie' : language;
       setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Detecting phrases in image...');
       progressBar.style.width = '4%';
       try {
@@ -466,6 +479,7 @@
             const colors = await pdfTextColors(page, content.items.length);
             const text = content.items.map(item => item.str).join('');
             if (text.length > 0) {
+              if (language === 'auto') setStatus('Detected ' + detectLanguage(text) + '. Reading PDF text...');
               const viewport = page.getViewport({ scale: 1 });
               pdfPages.push({
                 width: Math.round(viewport.width * 20),
@@ -485,7 +499,7 @@
               canvas.width = viewport.width;
               canvas.height = viewport.height;
               await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-              const result = await Tesseract.recognize(canvas, language, {
+              const result = await Tesseract.recognize(canvas, ocrLanguageCode, {
                 logger: message => {
                   if (message.status === 'recognizing text') {
                     const pageProgress = (pageNumber - 1 + message.progress) / pdf.numPages;
@@ -496,6 +510,7 @@
               if (result.data.text.length > 0) ocrParagraphs.push({ pageNumber, text: result.data.text });
             }
             if (!ocrParagraphs.length) throw new Error('No text was found in this PDF.');
+            if (language === 'auto') setStatus('Detected ' + detectLanguage(ocrParagraphs.map(paragraph => paragraph.text).join('\n')) + '. Building Word document...');
             children = ocrParagraphs.flatMap(paragraph => textToParagraphs(paragraph.text));
             sections = [{ children }];
           } else {
@@ -510,12 +525,13 @@
             }));
           }
         } else {
-          const result = await Tesseract.recognize(selectedFile, language, {
+          const result = await Tesseract.recognize(selectedFile, ocrLanguageCode, {
             logger: message => {
               if (message.status === 'recognizing text') progressBar.style.width = Math.round(8 + message.progress * 64) + '%';
             }
           });
           if (!result.data.text) throw new Error('No text was found in this image.');
+          if (language === 'auto') setStatus('Detected ' + detectLanguage(result.data.text) + '. Building Word document...');
           children = textToParagraphs(result.data.text);
           sections = [{ children }];
         }
