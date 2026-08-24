@@ -181,7 +181,7 @@
           ...item,
           x: item.transform[4],
           y: item.transform[5],
-          size: Math.max(8, Math.round(Math.abs(item.transform[0] || item.transform[3] || 12) * 2))
+          size: Math.max(8, Math.round(Math.hypot(item.transform[0], item.transform[1]) * 2))
         }))
         .sort((first, second) => second.y - first.y || first.x - second.x)
         .forEach(item => {
@@ -213,6 +213,7 @@
             });
           });
           return new docx.Paragraph({
+            alignment: docx.AlignmentType.CENTER,
             indent: { left: Math.max(0, Math.round(line.items[0].x * 20)) },
             spacing: { before: 0, after: 0 },
             children: runs.map(run => new docx.TextRun({
@@ -227,7 +228,10 @@
     }
 
     function textToParagraphs(text) {
-      return text.replace(/\r/g, '').split('\n').map(line => new docx.Paragraph({ text: line }));
+      return text.replace(/\r/g, '').split('\n').map(line => new docx.Paragraph({
+        alignment: docx.AlignmentType.CENTER,
+        text: line
+      }));
     }
 
     chooseButton.addEventListener('click', () => fileInput.click());
