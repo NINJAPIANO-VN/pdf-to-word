@@ -305,6 +305,66 @@
       return 'English/Latin';
     }
 
+    function preprocessImageForOCR(imageSource) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const maxDim = 2400;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const imageData = ctx.getImageData(0, 0, width, height);
+          const data = imageData.data;
+          
+          let sumBrightness = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            sumBrightness += gray;
+          }
+          const avgBrightness = sumBrightness / (data.length / 4);
+          const threshold = avgBrightness > 128 ? 140 : 110;
+
+          for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            const contrastVal = (gray - threshold) * 1.5 + 128;
+            const finalVal = Math.max(0, Math.min(255, contrastVal));
+            
+            data[i] = finalVal;
+            data[i + 1] = finalVal;
+            data[i + 2] = finalVal;
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => reject(new Error('Failed to load image for preprocessing.'));
+        
+        if (imageSource instanceof Blob) {
+          img.src = URL.createObjectURL(imageSource);
+        } else if (typeof imageSource === 'string') {
+          img.src = imageSource;
+        } else {
+          img.src = imageSource.toDataURL();
+        }
+      });
+    }
+
     function fontDescriptor(fontName, styles, commonObjs) {
       const style = styles[fontName] || {};
       let loadedFont = null;
@@ -487,6 +547,35 @@
         });
     }
 
+    function ocrLinesToParagraphs(lines) {
+      if (!lines || !lines.length) return [];
+      return lines.map(line => {
+        let align = docx.AlignmentType.LEFT;
+        if (line.align === 'center') align = docx.AlignmentType.CENTER;
+        if (line.align === 'right') align = docx.AlignmentType.RIGHT;
+
+        const words = line.words || [];
+        const isBold = words.some(w => w.font_weight === 'bold');
+        const isItalic = words.some(w => w.font_style === 'italic');
+        const avgFontSize = words.length > 0 
+          ? Math.round(words.reduce((sum, w) => sum + (w.font_size || 12), 0) / words.length * 1.5)
+          : 24;
+
+        return new docx.Paragraph({
+          alignment: align,
+          spacing: { before: 60, after: 60 },
+          children: [
+            new docx.TextRun({
+              text: line.text,
+              bold: isBold,
+              italics: isItalic,
+              size: Math.max(16, Math.min(72, avgFontSize))
+            })
+          ]
+        });
+      });
+    }
+
     function textToParagraphs(text) {
       return text.replace(/\r/g, '').split('\n').map(line => new docx.Paragraph({
         alignment: docx.AlignmentType.LEFT,
@@ -574,7 +663,8 @@
             for (let i = 0; i < extractedImages.length; i++) {
               setStatus('Detecting text in image ' + (i + 1) + ' of ' + extractedImages.length + '...');
               try {
-                const res = await Tesseract.recognize(extractedImages[i], ocrLang);
+                const processedSrc = await preprocessImageForOCR(extractedImages[i]);
+                const res = await Tesseract.recognize(processedSrc, ocrLang);
                 if (res.data && res.data.text.trim()) {
                   ocrResults.push(res.data.text.trim());
                 }
@@ -643,7 +733,7 @@
       const language = ocrLanguage.value;
       const ocrLanguageCode = getSelectedOcrLanguage();
 
-      setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Detecting text in image...');
+      setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Optimizing and detecting text in image...');
       progressBar.style.width = '4%';
 
       try {
@@ -683,16 +773,18 @@
           }
 
           if (!pdfPages.length) {
-            setStatus('No selectable text found. Performing OCR scan across all pages...');
+            setStatus('No selectable text found. Performing optimized OCR scan across all pages...');
             const ocrParagraphs = [];
             for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
               const page = await pdf.getPage(pageNumber);
-              const viewport = page.getViewport({ scale: 1.5 });
+              const viewport = page.getViewport({ scale: 2.0 });
               const canvas = document.createElement('canvas');
               canvas.width = viewport.width;
               canvas.height = viewport.height;
               await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-              const result = await Tesseract.recognize(canvas, ocrLanguageCode, {
+              
+              const processedImageSrc = await preprocessImageForOCR(canvas);
+              const result = await Tesseract.recognize(processedImageSrc, ocrLanguageCode, {
                 logger: message => {
                   if (message.status === 'recognizing text') {
                     const pageProgress = (pageNumber - 1 + message.progress) / pdf.numPages;
@@ -700,11 +792,14 @@
                   }
                 }
               });
-              if (result.data.text.length > 0) ocrParagraphs.push({ pageNumber, text: result.data.text });
+              if (result.data.lines && result.data.lines.length > 0) {
+                ocrParagraphs.push(...ocrLinesToParagraphs(result.data.lines));
+              } else if (result.data.text.length > 0) {
+                ocrParagraphs.push(...textToParagraphs(result.data.text));
+              }
             }
             if (!ocrParagraphs.length) throw new Error('No text was detected in this PDF file.');
-            if (language === 'auto') setStatus('Detected language: ' + detectLanguage(ocrParagraphs.map(p => p.text).join('\n')) + '. Building Word document...');
-            children = ocrParagraphs.flatMap(paragraph => textToParagraphs(paragraph.text));
+            children = ocrParagraphs;
             sections = [{ children }];
           } else {
             sections = pdfPages.map(page => ({
@@ -718,14 +813,27 @@
             }));
           }
         } else {
-          const result = await Tesseract.recognize(selectedFile, ocrLanguageCode, {
+          setStatus('Preprocessing image for high-accuracy text detection...');
+          const processedImageSrc = await preprocessImageForOCR(selectedFile);
+          
+          const result = await Tesseract.recognize(processedImageSrc, ocrLanguageCode, {
             logger: message => {
               if (message.status === 'recognizing text') progressBar.style.width = Math.round(8 + message.progress * 64) + '%';
             }
           });
-          if (!result.data.text) throw new Error('No text found in this image.');
+
+          if (!result.data || (!result.data.text && !result.data.lines.length)) {
+            throw new Error('No text found in this image.');
+          }
+          
           if (language === 'auto') setStatus('Detected language: ' + detectLanguage(result.data.text) + '. Building Word document...');
-          children = textToParagraphs(result.data.text);
+          
+          if (result.data.lines && result.data.lines.length > 0) {
+            children = ocrLinesToParagraphs(result.data.lines);
+          } else {
+            children = textToParagraphs(result.data.text);
+          }
+          
           sections = [{ children }];
         }
 
