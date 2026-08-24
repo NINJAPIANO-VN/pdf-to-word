@@ -181,6 +181,15 @@
       return family || 'Times New Roman';
     }
 
+    function pdfFontStyles(fontName, styles) {
+      const family = styles[fontName]?.fontFamily || '';
+      const descriptor = fontName + ' ' + family;
+      return {
+        bold: /bold|black|heavy|demi|semibold/i.test(descriptor),
+        italics: /italic|oblique/i.test(descriptor)
+      };
+    }
+
     function itemHasUnderline(item, annotations) {
       if (/underline|underlined/i.test(item.fontName || '')) return true;
       const itemHeight = Math.max(8, Math.hypot(item.transform[0], item.transform[1]));
@@ -190,7 +199,11 @@
       const itemTop = item.transform[5] + itemHeight * .2;
       return annotations.some(annotation => {
         if (annotation.subtype !== 'Underline' || !annotation.rect) return false;
-        const [left, bottom, right, top] = annotation.rect;
+        const [firstX, firstY, secondX, secondY] = annotation.rect;
+        const left = Math.min(firstX, secondX);
+        const right = Math.max(firstX, secondX);
+        const bottom = Math.min(firstY, secondY);
+        const top = Math.max(firstY, secondY);
         return right >= itemLeft && left <= itemRight && top >= itemBottom && bottom <= itemTop;
       });
     }
@@ -225,11 +238,12 @@
             const gap = previous ? item.x - previous.endX : 0;
             const needsSpace = previous && gap > item.size * 0.15 && !previous.text.endsWith(' ') && !item.str.startsWith(' ');
             const fontName = item.fontName || '';
+            const fontStyles = pdfFontStyles(fontName, styles);
             runs.push({
               text: (needsSpace ? ' ' : '') + item.str,
               endX: item.x + item.width,
-              bold: /bold|black|heavy|demi|semibold/i.test(fontName),
-              italics: /italic|oblique/i.test(fontName),
+              bold: fontStyles.bold,
+              italics: fontStyles.italics,
               underline: itemHasUnderline(item, annotations),
               font: wordFontFamily(fontName, styles),
               size: item.size
