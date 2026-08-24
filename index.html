@@ -530,6 +530,16 @@
 
       printable.querySelectorAll('header, footer, .docx-header, .docx-footer, .docx-wrapper > section > header, .docx-wrapper > section > footer').forEach(el => el.remove());
 
+      printable.querySelectorAll('svg, rect, path, hr, div[style*="background"], div[style*="border"], span[style*="border"], svg rect, shape, v\\:rect, v\\:shape').forEach(el => {
+        const isSvg = el.tagName.toLowerCase() === 'svg' || el.tagName.toLowerCase() === 'rect' || el.tagName.toLowerCase() === 'path';
+        const isLine = el.tagName.toLowerCase() === 'hr';
+        const style = window.getComputedStyle(el);
+        const hasDarkBg = style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)' && style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgb(255, 255, 255)';
+        if (isSvg || isLine || hasDarkBg) {
+          el.remove();
+        }
+      });
+
       if (!printable.textContent.trim() && !printable.querySelector('img, table')) {
         throw new Error('No readable content was found in this Word document.');
       }
@@ -544,6 +554,7 @@
           el.style.borderTop = 'none';
           el.style.borderBottom = 'none';
           el.style.boxShadow = 'none';
+          el.style.outline = 'none';
           if (el.tagName.toLowerCase() === 'hr') {
             el.remove();
           }
