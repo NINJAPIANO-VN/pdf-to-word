@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Document Converter</title>
+  <title>Document Converter & Text Detector</title>
   <style>
     :root {
       color-scheme: light;
       --ink: #24201c;
       --muted: #756d64;
-      --paper: #f5f0e8;
+      --paper: #ffffff;
       --panel: #ffffff;
       --line: #ded4c6;
       --teal: #9b773d;
@@ -23,19 +23,8 @@
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      background: var(--paper);
+      background: #f5f0e8;
       font-family: Didot, 'Bodoni 72', 'Times New Roman', serif;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      opacity: .6;
-      background-image: linear-gradient(rgba(155, 119, 61, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(155, 119, 61, .05) 1px, transparent 1px);
-      background-size: 38px 38px;
-      mask-image: linear-gradient(to bottom, black, transparent 78%);
     }
 
     .shell { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 54px 0 70px; }
@@ -43,17 +32,12 @@
     .eyebrow { margin: 0 0 10px; color: var(--teal); font: 700 12px/1.2 Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
     h1 { margin: 0; max-width: 530px; font-size: clamp(42px, 7vw, 72px); line-height: .92; letter-spacing: -.045em; font-weight: 600; }
     .intro { max-width: 250px; margin: 8px 0 0; color: var(--muted); font-size: 17px; line-height: 1.45; }
-    .mark { flex: 0 0 auto; display: grid; place-items: center; width: 58px; height: 58px; border: 1px solid var(--teal); color: var(--teal); font: 700 16px Arial, sans-serif; transform: rotate(8deg); }
 
     .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; }
     .dropzone, .controls { background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
-    .dropzone { min-height: 430px; display: grid; place-items: center; padding: 34px; border-top: 4px solid var(--teal); transition: border-color .2s, background .2s, transform .2s; }
+    .dropzone { min-height: 430px; display: grid; place-items: center; padding: 34px; border: 1px solid var(--line); transition: border-color .2s, background .2s, transform .2s; cursor: pointer; }
     .dropzone.is-over { border-color: var(--coral); background: #fcf8f0; transform: translateY(-3px); }
     .drop-content { width: min(100%, 420px); text-align: center; }
-    .paper-icon { width: 72px; height: 88px; margin: 0 auto 24px; padding: 14px 11px; border: 1px solid var(--ink); position: relative; text-align: left; }
-    .paper-icon::before, .paper-icon::after { content: ''; display: block; width: 100%; height: 2px; margin: 9px 0; background: var(--coral); }
-    .paper-icon::after { width: 70%; }
-    .paper-icon span { position: absolute; right: -2px; top: -2px; width: 19px; height: 19px; border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink); background: var(--panel); }
     h2 { margin: 0 0 10px; font-size: 29px; font-weight: 600; }
     .drop-copy { margin: 0 auto 24px; color: var(--muted); font: 15px/1.5 Arial, sans-serif; }
     .button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 46px; padding: 0 20px; border: 0; color: #fffaf2; background: var(--ink); cursor: pointer; font: 700 12px Arial, sans-serif; letter-spacing: .09em; text-transform: uppercase; transition: background .2s, transform .2s; }
@@ -65,24 +49,22 @@
     .controls h3 { margin: 0 0 20px; font-size: 20px; font-weight: 600; }
     label { display: block; margin: 0 0 7px; color: var(--muted); font: 700 11px Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
     input[type="text"], select { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--line); color: var(--ink); background: #fcfdfc; font: 15px Arial, sans-serif; }
-    input[type="text"]:focus { outline: 2px solid rgba(8, 127, 120, .22); border-color: var(--teal); }
-    select:focus { outline: 2px solid rgba(8, 127, 120, .22); border-color: var(--teal); }
+    input[type="text"]:focus, select:focus { outline: 2px solid rgba(8, 127, 120, .22); border-color: var(--teal); }
     .field { margin-bottom: 18px; }
     .file-info { padding: 13px; color: var(--muted); background: #f7f2ea; font: 12px/1.45 Arial, sans-serif; word-break: break-word; }
     .file-info strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 3px; }
     .status { min-height: 42px; margin-top: 20px; padding: 12px; border-left: 3px solid var(--coral); color: var(--muted); font: 12px/1.45 Arial, sans-serif; }
     .status[data-type="success"] { border-color: var(--teal); color: var(--teal-dark); }
-    .status[data-type="error"] { color: #b34636; }
+    .status[data-type="error"] { border-color: #b34636; color: #b34636; }
     .progress { height: 4px; margin-top: 15px; overflow: hidden; background: #e7eeec; }
     .progress span { display: block; width: 0; height: 100%; background: var(--coral); transition: width .2s; }
-    .ocr-result { margin: 8px 0 16px; padding: 8px; border-left: 2px solid var(--teal); color: #333; background: #fafafa; white-space: pre-wrap; font: 10pt Arial, sans-serif; }
+    .ocr-result { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-left: 3px solid var(--teal); color: #333; background: #fafafa; white-space: pre-wrap; font: 10pt Arial, sans-serif; }
 
     footer { margin-top: 19px; color: #849092; font: 12px Arial, sans-serif; }
     @media (max-width: 700px) {
       .shell { width: min(100% - 24px, 560px); padding-top: 30px; }
       header { margin-bottom: 27px; }
       .intro { display: none; }
-      .mark { width: 46px; height: 46px; font-size: 13px; }
       .workspace { grid-template-columns: 1fr; }
       .dropzone { min-height: 360px; padding: 26px 18px; }
     }
@@ -92,66 +74,145 @@
   <main class="shell">
     <header>
       <div>
-        <p class="eyebrow">Document utility / 01</p>
-        <h1>PDF, image, or Word document conversion.</h1>
+        <p class="eyebrow">Document Utility / 01</p>
+        <h1>PDF, Image, or Word Document Converter</h1>
       </div>
-      <p class="intro">Convert PDFs and images into editable Word files, or turn Word documents into polished PDFs.</p>
-      <div class="mark" aria-hidden="true">PDF<br>↔ DOCX</div>
+      <p class="intro">Convert PDFs and images to editable Word files, or export Word documents directly as PDFs.</p>
     </header>
 
-    <section class="workspace" aria-label="PDF conversion workspace">
+    <section class="workspace" aria-label="Document conversion workspace">
       <div class="dropzone" id="dropzone" tabindex="0">
         <div class="drop-content">
-          <div class="paper-icon" aria-hidden="true"><span></span></div>
-          <h2>Drop a document here</h2>
-          <p class="drop-copy">Convert PDF or image text to Word, or export a Word document as PDF.</p>
-          <button class="button" id="chooseButton" type="button"><span aria-hidden="true">↑</span> Choose file</button>
+          <h2>Drop your document here</h2>
+          <p class="drop-copy">Convert PDF or image text into Word, or export a Word document directly to PDF.</p>
+          <button class="button" id="chooseButton" type="button"><span aria-hidden="true">↑</span> Choose File</button>
           <input id="fileInput" type="file" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx,image/png,image/jpeg,image/webp" hidden>
-          <p class="hint">PDF, DOCX, PNG, JPG, or WEBP · one file at a time</p>
+          <p class="hint">PDF, DOCX, PNG, JPG, or WEBP · Process one file at a time</p>
         </div>
       </div>
 
       <aside class="controls">
-        <h3>Export settings</h3>
+        <h3>Export Settings</h3>
         <div class="field">
-          <label for="documentName">Document name</label>
+          <label for="documentName">Document Name</label>
           <input id="documentName" type="text" value="converted-document" maxlength="80">
         </div>
         <div class="field">
-          <label for="ocrLanguage">OCR language</label>
+          <label for="ocrLanguage">OCR Language</label>
           <select id="ocrLanguage">
-            <option value="auto">Auto-detect</option>
+            <option value="auto">Auto-detect Language</option>
             <option value="eng">English</option>
             <option value="vie">Vietnamese</option>
             <option value="eng+vie">English + Vietnamese</option>
-            <option value="spa">Spanish</option>
-            <option value="fra">French</option>
-            <option value="deu">German</option>
-            <option value="ita">Italian</option>
-            <option value="por">Portuguese</option>
-            <option value="rus">Russian</option>
+            <option value="afr">Afrikaans</option>
+            <option value="sqi">Albanian</option>
+            <option value="amh">Amharic</option>
             <option value="ara">Arabic</option>
-            <option value="hin">Hindi</option>
-            <option value="tha">Thai</option>
+            <option value="hyw">Armenian</option>
+            <option value="asm">Assamese</option>
+            <option value="aze">Azerbaijani</option>
+            <option value="eus">Basque</option>
+            <option value="bel">Belarusian</option>
+            <option value="ben">Bengali</option>
+            <option value="bos">Bosnian</option>
+            <option value="bul">Bulgarian</option>
+            <option value="cat">Catalan</option>
+            <option value="ceb">Cebuano</option>
             <option value="chi_sim">Chinese (Simplified)</option>
             <option value="chi_tra">Chinese (Traditional)</option>
+            <option value="chr">Cherokee</option>
+            <option value="cos">Corsican</option>
+            <option value="hrv">Croatian</option>
+            <option value="ces">Czech</option>
+            <option value="dan">Danish</option>
+            <option value="nld">Dutch</option>
+            <option value="epo">Esperanto</option>
+            <option value="est">Estonian</option>
+            <option value="fao">Faroese</option>
+            <option value="fil">Filipino / Tagalog</option>
+            <option value="fin">Finnish</option>
+            <option value="fra">French</option>
+            <option value="fry">Frisian</option>
+            <option value="glg">Galician</option>
+            <option value="kat">Georgian</option>
+            <option value="deu">German</option>
+            <option value="ell">Greek</option>
+            <option value="guj">Gujarati</option>
+            <option value="hat">Haitian Creole</option>
+            <option value="heb">Hebrew</option>
+            <option value="hin">Hindi</option>
+            <option value="hun">Hungarian</option>
+            <option value="isl">Icelandic</option>
+            <option value="ind">Indonesian</option>
+            <option value="gle">Irish</option>
+            <option value="ita">Italian</option>
             <option value="jpn">Japanese</option>
+            <option value="kan">Kannada</option>
+            <option value="kaz">Kazakh</option>
+            <option value="khm">Khmer</option>
             <option value="kor">Korean</option>
+            <option value="kur">Kurdish</option>
+            <option value="kir">Kyrgyz</option>
+            <option value="lao">Lao</option>
+            <option value="lat">Latin</option>
+            <option value="lav">Latvian</option>
+            <option value="lit">Lithuanian</option>
+            <option value="ltz">Luxembourgish</option>
+            <option value="mkd">Macedonian</option>
+            <option value="msa">Malay</option>
+            <option value="mal">Malayalam</option>
+
+            <option value="mlt">Maltese</option>
+            <option value="mri">Maori</option>
+            <option value="mar">Marathi</option>
+            <option value="mon">Mongolian</option>
+            <option value="nep">Nepali</option>
+            <option value="nor">Norwegian</option>
+            <option value="ori">Oriya</option>
+            <option value="fas">Persian</option>
+            <option value="pol">Polish</option>
+            <option value="por">Portuguese</option>
+            <option value="pan">Punjabi</option>
+            <option value="ron">Romanian</option>
+            <option value="rus">Russian</option>
+            <option value="srp">Serbian</option>
+            <option value="snd">Sindhi</option>
+            <option value="sin">Sinhala</option>
+            <option value="slk">Slovak</option>
+            <option value="slv">Slovenian</option>
+            <option value="spa">Spanish</option>
+            <option value="sun">Sundanese</option>
+            <option value="swa">Swahili</option>
+            <option value="swe">Swedish</option>
+            <option value="tgk">Tajik</option>
+            <option value="tam">Tamil</option>
+            <option value="tat">Tatar</option>
+            <option value="tel">Telugu</option>
+            <option value="tha">Thai</option>
+            <option value="bod">Tibetan</option>
+            <option value="tur">Turkish</option>
+            <option value="ukr">Ukrainian</option>
+            <option value="urd">Urdu</option>
+
+            <option value="uzb">Uzbek</option>
+            <option value="cym">Welsh</option>
+            <option value="yid">Yiddish</option>
+            <option value="yor">Yoruba</option>
           </select>
         </div>
         <div class="field">
           <label><input id="ocrWordImages" type="checkbox" checked> Detect text inside Word images</label>
         </div>
         <div class="field">
-          <label>Selected file</label>
+          <label>Selected File</label>
           <div class="file-info" id="fileInfo"><strong>No file selected</strong>Choose a file to begin.</div>
         </div>
-        <button class="button" id="convertButton" type="button" disabled>Convert file</button>
+        <button class="button" id="convertButton" type="button" disabled>Convert File</button>
         <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
-        <div class="status" id="status" role="status" aria-live="polite">Waiting for a PDF or image.</div>
+        <div class="status" id="status" role="status" aria-live="polite">Waiting for a file.</div>
       </aside>
     </section>
-    <footer>Conversion happens locally. PDF text and Word formatting are preserved where the browser can read them; scanned pages use the selected OCR language.</footer>
+    <footer>Conversion happens locally. Formats, alignment, font sizes, and styles are preserved automatically.</footer>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -160,7 +221,6 @@
   <script>window.docxPreview = window.docx;</script>
   <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     const dropzone = document.getElementById('dropzone');
@@ -188,15 +248,15 @@
       const isDocx = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.toLowerCase().endsWith('.docx');
       const isImage = file.type.startsWith('image/');
       if (!isPdf && !isDocx && !isImage) {
-        setStatus('Please choose a PDF, DOCX, PNG, JPG, or WEBP file.', 'error');
+        setStatus('Please select a PDF, DOCX, PNG, JPG, or WEBP file.', 'error');
         return;
       }
       selectedFile = file;
-      const baseName = file.name.replace(/\.(pdf|png|jpe?g|webp)$/i, '');
+      const baseName = file.name.replace(/\.(pdf|docx|png|jpe?g|webp)$/i, '');
       documentName.value = baseName || 'converted-document';
       fileInfo.innerHTML = '<strong>' + escapeHtml(file.name) + '</strong>' + formatBytes(file.size);
       convertButton.disabled = false;
-      setStatus(isDocx ? 'Ready to export as PDF.' : 'Ready to convert.');
+      setStatus(isDocx ? 'Ready to export as PDF.' : 'Ready to convert to Word.');
     }
 
     function escapeHtml(value) {
@@ -226,17 +286,9 @@
         loadedFont = commonObjs.get(fontName);
       }
       return [
-        fontName,
-        style.fontFamily,
-        style.fontName,
-        style.fontWeight,
-        style.fontStyle,
-        loadedFont?.name,
-        loadedFont?.loadedName,
-        loadedFont?.fontFamily,
-        loadedFont?.fontName,
-        loadedFont?.fontWeight,
-        loadedFont?.fontStyle,
+        fontName, style.fontFamily, style.fontName, style.fontWeight, style.fontStyle,
+        loadedFont?.name, loadedFont?.loadedName, loadedFont?.fontFamily, loadedFont?.fontName,
+        loadedFont?.fontWeight, loadedFont?.fontStyle,
         loadedFont?.bold || loadedFont?.black ? 'bold' : '',
         loadedFont?.italic ? 'italic' : ''
       ].filter(Boolean).join(' ');
@@ -265,7 +317,7 @@
     }
 
     function rgbHex(red, green, blue) {
-      return [red, green, blue].map(colorValue).map(value => value.toString(16).padStart(2, '0')).join('').toUpperCase();
+      return [red, green, blue].map(colorValue).map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
     }
 
     function pdfColorFromOperator(fn, args) {
@@ -276,8 +328,8 @@
         return rgbHex(values[0], values[1], values[2]);
       }
       if (fn === pdfjsLib.OPS.setFillCMYKColor && values.length === 4) {
-        const [cyan, magenta, yellow, black] = values.map(Number);
-        return rgbHex(255 * (1 - Math.min(1, cyan + black)), 255 * (1 - Math.min(1, magenta + black)), 255 * (1 - Math.min(1, yellow + black)));
+        const [c, m, y, k] = values.map(Number);
+        return rgbHex(255 * (1 - Math.min(1, c + k)), 255 * (1 - Math.min(1, m + k)), 255 * (1 - Math.min(1, y + k)));
       }
       return null;
     }
@@ -319,7 +371,24 @@
       });
     }
 
-    function pdfItemsToParagraphs(items, styles, commonObjs, annotations = [], colors = []) {
+    function detectAlignment(lineItems, pageWidth = 600) {
+      if (!lineItems.length) return docx.AlignmentType.LEFT;
+      const minX = lineItems[0].x;
+      const maxX = lineItems[lineItems.length - 1].x + lineItems[lineItems.length - 1].width;
+      const lineWidth = maxX - minX;
+      const leftMargin = minX;
+      const rightMargin = pageWidth - maxX;
+
+      if (Math.abs(leftMargin - rightMargin) < 35 && lineWidth < pageWidth * 0.75) {
+        return docx.AlignmentType.CENTER;
+      }
+      if (rightMargin < 40 && leftMargin > 100) {
+        return docx.AlignmentType.RIGHT;
+      }
+      return docx.AlignmentType.LEFT;
+    }
+
+    function pdfItemsToParagraphs(items, styles, commonObjs, annotations = [], colors = [], pageWidth = 600) {
       const lines = [];
       items
         .map((item, itemIndex) => ({
@@ -344,6 +413,7 @@
         .sort((first, second) => second.y - first.y)
         .map(line => {
           line.items.sort((first, second) => first.x - second.x);
+          const alignment = detectAlignment(line.items, pageWidth);
           const runs = [];
           line.items.forEach(item => {
             const previous = runs[runs.length - 1];
@@ -363,7 +433,7 @@
             });
           });
           return new docx.Paragraph({
-            alignment: docx.AlignmentType.CENTER,
+            alignment,
             spacing: { before: 0, after: 0 },
             children: runs.map(run => new docx.TextRun({
               text: run.text,
@@ -380,72 +450,113 @@
 
     function textToParagraphs(text) {
       return text.replace(/\r/g, '').split('\n').map(line => new docx.Paragraph({
-        alignment: docx.AlignmentType.CENTER,
+        alignment: docx.AlignmentType.LEFT,
         text: line
       }));
     }
 
+    async function extractImagesFromDocx(file) {
+      try {
+        const zip = await JSZip.loadAsync(file);
+        const images = [];
+        const mediaFiles = Object.keys(zip.files).filter(filename => filename.startsWith('word/media/'));
+        for (const filename of mediaFiles) {
+          const blob = await zip.files[filename].async('blob');
+          images.push(blob);
+        }
+        return images;
+      } catch (err) {
+        console.warn('Unable to extract images from DOCX file archive:', err);
+        return [];
+      }
+    }
+
     async function convertWordToPdf(file, name, language, detectImages) {
       if (typeof docxPreview === 'undefined' || typeof html2pdf === 'undefined' || (detectImages && typeof Tesseract === 'undefined')) {
-        throw new Error('Word-to-PDF libraries could not be loaded. Check your internet connection.');
+        throw new Error('Required conversion libraries failed to load. Please check your internet connection.');
       }
       const printable = document.createElement('article');
-      printable.style.cssText = 'width: 180mm; min-height: 267mm; padding: 0; color: #000; background: #fff; font: 11pt Arial, sans-serif; line-height: 1.45;';
-      await docxPreview.renderAsync(await file.arrayBuffer(), printable, null, {
-        ignoreWidth: true,
+      printable.style.cssText = 'width: 190mm; margin: 0 auto; padding: 0; color: #000; background: #fff; font-family: "Times New Roman", Arial, sans-serif; font-size: 11pt; line-height: 1.45; border: none !important; box-shadow: none !important;';
+
+      const fileBuffer = await file.arrayBuffer();
+      await docxPreview.renderAsync(fileBuffer, printable, null, {
+        ignoreWidth: false,
         ignoreHeight: true,
-        breakPages: true,
-        renderHeaders: true,
-        renderFooters: true,
+        breakPages: false,
+        renderHeaders: false,
+        renderFooters: false,
         renderFootnotes: true,
-        experimental: true
+        experimental: false
       });
+
+      printable.querySelectorAll('header, footer, .docx-header, .docx-footer, .docx-wrapper > section > header, .docx-wrapper > section > footer').forEach(el => el.remove());
+
       if (!printable.textContent.trim() && !printable.querySelector('img, table')) {
         throw new Error('No readable content was found in this Word document.');
       }
+
       const container = document.createElement('div');
-      container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 180mm; background: #fff;';
+      container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 190mm; background: #fff; border: none; padding: 0; margin: 0;';
       container.appendChild(printable);
       document.body.appendChild(container);
+
       try {
-      printable.querySelectorAll('img').forEach(image => {
-        image.style.maxWidth = '100%';
-        image.style.height = 'auto';
-      });
-      if (detectImages) {
-        const images = Array.from(printable.querySelectorAll('img'));
-        await Promise.all(images.map(image => image.complete && image.naturalWidth > 0 ? Promise.resolve() : new Promise((resolve, reject) => {
-          image.addEventListener('load', resolve, { once: true });
-          image.addEventListener('error', () => reject(new Error('An embedded Word image could not be loaded.')), { once: true });
-        })));
-        for (let imageIndex = 0; imageIndex < images.length; imageIndex += 1) {
-          setStatus('Detecting text in Word image ' + (imageIndex + 1) + ' of ' + images.length + '...');
-          const result = await Tesseract.recognize(images[imageIndex], language === 'auto' ? 'eng+vie' : language);
-          if (result.data.text.trim()) {
-            const detectedText = document.createElement('div');
-            detectedText.className = 'ocr-result';
-            detectedText.textContent = result.data.text.trim();
-            images[imageIndex].insertAdjacentElement('afterend', detectedText);
+        printable.querySelectorAll('*').forEach(el => {
+          el.style.borderTop = 'none';
+          el.style.borderBottom = 'none';
+          el.style.boxShadow = 'none';
+          if (el.tagName.toLowerCase() === 'hr') {
+            el.remove();
           }
-          progressBar.style.width = Math.round(8 + ((imageIndex + 1) / images.length) * 42) + '%';
+        });
+
+        printable.querySelectorAll('img').forEach(image => {
+          image.style.maxWidth = '100%';
+          image.style.height = 'auto';
+        });
+
+        if (detectImages) {
+          setStatus('Extracting embedded images from document...');
+          const extractedImages = await extractImagesFromDocx(file);
+          if (extractedImages.length > 0) {
+            const ocrLang = language === 'auto' ? 'eng+vie' : language;
+            const ocrResults = [];
+            for (let i = 0; i < extractedImages.length; i++) {
+              setStatus('Detecting text in image ' + (i + 1) + ' of ' + extractedImages.length + '...');
+              try {
+                const res = await Tesseract.recognize(extractedImages[i], ocrLang);
+                if (res.data && res.data.text.trim()) {
+                  ocrResults.push(res.data.text.trim());
+                }
+              } catch (e) {
+                console.warn('OCR processing failed for image', e);
+              }
+              progressBar.style.width = Math.round(8 + ((i + 1) / extractedImages.length) * 42) + '%';
+            }
+            if (ocrResults.length > 0) {
+              const ocrBlock = document.createElement('div');
+              ocrBlock.className = 'ocr-result';
+              ocrBlock.innerHTML = '<strong>[OCR Detected Text from Images]</strong><br>' + escapeHtml(ocrResults.join('\n\n'));
+              printable.appendChild(ocrBlock);
+            }
+          }
         }
-      }
-      printable.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
-        heading.style.pageBreakAfter = 'avoid';
-      });
-      printable.querySelectorAll('table').forEach(table => {
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-      });
-      printable.querySelectorAll('td, th').forEach(cell => {
-        cell.style.border = '1px solid #999';
-        cell.style.padding = '4px 6px';
-      });
+
+        printable.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => heading.style.pageBreakAfter = 'avoid');
+        printable.querySelectorAll('table').forEach(table => {
+          table.style.width = '100%';
+          table.style.borderCollapse = 'collapse';
+        });
+        printable.querySelectorAll('td, th').forEach(cell => {
+          cell.style.border = '1px solid #999';
+          cell.style.padding = '4px 6px';
+        });
+
         await html2pdf().set({
-          margin: [15, 15, 15, 15],
+          margin: [12, 12, 12, 12],
           filename: name + '.pdf',
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true },
+          html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
         }).from(printable).save();
@@ -479,43 +590,49 @@
       const isDocx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || selectedFile.name.toLowerCase().endsWith('.docx');
       const language = ocrLanguage.value;
       const ocrLanguageCode = language === 'auto' ? 'eng+vie' : language;
-      setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Detecting phrases in image...');
+
+      setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Detecting text in image...');
       progressBar.style.width = '4%';
+
       try {
         if (isDocx) {
-          setStatus('Building PDF...');
+          setStatus('Generating PDF...');
           const outputName = (documentName.value.trim() || 'converted-document').replace(/\.pdf$/i, '');
           await convertWordToPdf(selectedFile, outputName, language, ocrWordImages.checked);
           progressBar.style.width = '100%';
-          setStatus('PDF downloaded.', 'success');
+          setStatus('PDF generated and downloaded successfully.', 'success');
           return;
         }
+
         let children;
         let sections;
+
         if (isPdf) {
           const pdf = await pdfjsLib.getDocument({ data: await selectedFile.arrayBuffer() }).promise;
           const pdfPages = [];
-          for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+          for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
             const page = await pdf.getPage(pageNumber);
             const content = await page.getTextContent();
             const annotations = await page.getAnnotations({ intent: 'display' });
             const colors = await pdfTextColors(page, content.items.length);
             const text = content.items.map(item => item.str).join('');
+            const viewport = page.getViewport({ scale: 1 });
+
             if (text.length > 0) {
-              if (language === 'auto') setStatus('Detected ' + detectLanguage(text) + '. Reading PDF text...');
-              const viewport = page.getViewport({ scale: 1 });
+              if (language === 'auto') setStatus('Detected language: ' + detectLanguage(text) + '. Parsing layout...');
               pdfPages.push({
                 width: Math.round(viewport.width * 20),
                 height: Math.round(viewport.height * 20),
-                children: pdfItemsToParagraphs(content.items, content.styles, page.commonObjs, annotations, colors)
+                children: pdfItemsToParagraphs(content.items, content.styles, page.commonObjs, annotations, colors, viewport.width)
               });
             }
             progressBar.style.width = Math.round((pageNumber / pdf.numPages) * 72) + '%';
           }
+
           if (!pdfPages.length) {
-            setStatus('No selectable text found. Running OCR on the PDF pages...');
+            setStatus('No selectable text found. Performing OCR scan...');
             const ocrParagraphs = [];
-            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
               const page = await pdf.getPage(pageNumber);
               const viewport = page.getViewport({ scale: 1.5 });
               const canvas = document.createElement('canvas');
@@ -532,8 +649,8 @@
               });
               if (result.data.text.length > 0) ocrParagraphs.push({ pageNumber, text: result.data.text });
             }
-            if (!ocrParagraphs.length) throw new Error('No text was found in this PDF.');
-            if (language === 'auto') setStatus('Detected ' + detectLanguage(ocrParagraphs.map(paragraph => paragraph.text).join('\n')) + '. Building Word document...');
+            if (!ocrParagraphs.length) throw new Error('No text was detected in this PDF file.');
+            if (language === 'auto') setStatus('Detected language: ' + detectLanguage(ocrParagraphs.map(p => p.text).join('\n')) + '. Building Word document...');
             children = ocrParagraphs.flatMap(paragraph => textToParagraphs(paragraph.text));
             sections = [{ children }];
           } else {
@@ -553,12 +670,13 @@
               if (message.status === 'recognizing text') progressBar.style.width = Math.round(8 + message.progress * 64) + '%';
             }
           });
-          if (!result.data.text) throw new Error('No text was found in this image.');
-          if (language === 'auto') setStatus('Detected ' + detectLanguage(result.data.text) + '. Building Word document...');
+          if (!result.data.text) throw new Error('No text found in this image.');
+          if (language === 'auto') setStatus('Detected language: ' + detectLanguage(result.data.text) + '. Building Word document...');
           children = textToParagraphs(result.data.text);
           sections = [{ children }];
         }
-        setStatus('Building Word document...');
+
+        setStatus('Generating Word document...');
         const doc = new docx.Document({
           styles: {
             default: {
@@ -579,10 +697,10 @@
         link.click();
         URL.revokeObjectURL(link.href);
         progressBar.style.width = '100%';
-        setStatus('Word document downloaded.', 'success');
+        setStatus('Word document generated and downloaded successfully.', 'success');
       } catch (error) {
         progressBar.style.width = '0%';
-        setStatus(error.message || 'Conversion failed. Please try another PDF.', 'error');
+        setStatus(error.message || 'Conversion failed. Please try processing another file.', 'error');
       } finally {
         convertButton.disabled = false;
       }
