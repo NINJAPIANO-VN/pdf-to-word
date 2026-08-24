@@ -181,7 +181,21 @@
       return family || 'Times New Roman';
     }
 
-    function pdfItemsToParagraphs(items, styles) {
+    function itemHasUnderline(item, annotations) {
+      if (/underline|underlined/i.test(item.fontName || '')) return true;
+      const itemHeight = Math.max(8, Math.hypot(item.transform[0], item.transform[1]));
+      const itemLeft = item.transform[4];
+      const itemRight = itemLeft + item.width;
+      const itemBottom = item.transform[5] - itemHeight * .45;
+      const itemTop = item.transform[5] + itemHeight * .2;
+      return annotations.some(annotation => {
+        if (annotation.subtype !== 'Underline' || !annotation.rect) return false;
+        const [left, bottom, right, top] = annotation.rect;
+        return right >= itemLeft && left <= itemRight && top >= itemBottom && bottom <= itemTop;
+      });
+    }
+
+    function pdfItemsToParagraphs(items, styles, annotations = []) {
       const lines = [];
       items
         .filter(item => item.str)
@@ -216,6 +230,7 @@
               endX: item.x + item.width,
               bold: /bold|black|heavy|demi|semibold/i.test(fontName),
               italics: /italic|oblique/i.test(fontName),
+              underline: itemHasUnderline(item, annotations),
               font: wordFontFamily(fontName, styles),
               size: item.size
             });
@@ -227,6 +242,7 @@
               text: run.text,
               bold: run.bold,
               italics: run.italics,
+              underline: run.underline ? { type: docx.UnderlineType.SINGLE } : undefined,
               font: run.font,
               size: run.size
             }))
@@ -274,13 +290,14 @@
           for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
             const page = await pdf.getPage(pageNumber);
             const content = await page.getTextContent();
+            const annotations = await page.getAnnotations({ intent: 'display' });
             const text = content.items.map(item => item.str).join('');
             if (text.length > 0) {
               const viewport = page.getViewport({ scale: 1 });
               pdfPages.push({
                 width: Math.round(viewport.width * 20),
                 height: Math.round(viewport.height * 20),
-                children: pdfItemsToParagraphs(content.items, content.styles)
+                children: pdfItemsToParagraphs(content.items, content.styles, annotations)
               });
             }
             progressBar.style.width = Math.round((pageNumber / pdf.numPages) * 72) + '%';
