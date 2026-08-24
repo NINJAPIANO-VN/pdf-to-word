@@ -403,12 +403,21 @@
       if (!printable.textContent.trim() && !printable.querySelector('img, table')) {
         throw new Error('No readable content was found in this Word document.');
       }
+      const container = document.createElement('div');
+      container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 180mm; background: #fff;';
+      container.appendChild(printable);
+      document.body.appendChild(container);
+      try {
       printable.querySelectorAll('img').forEach(image => {
         image.style.maxWidth = '100%';
         image.style.height = 'auto';
       });
       if (detectImages) {
         const images = Array.from(printable.querySelectorAll('img'));
+        await Promise.all(images.map(image => image.complete && image.naturalWidth > 0 ? Promise.resolve() : new Promise((resolve, reject) => {
+          image.addEventListener('load', resolve, { once: true });
+          image.addEventListener('error', () => reject(new Error('An embedded Word image could not be loaded.')), { once: true });
+        })));
         for (let imageIndex = 0; imageIndex < images.length; imageIndex += 1) {
           setStatus('Detecting text in Word image ' + (imageIndex + 1) + ' of ' + images.length + '...');
           const result = await Tesseract.recognize(images[imageIndex], language === 'auto' ? 'eng+vie' : language);
@@ -432,11 +441,6 @@
         cell.style.border = '1px solid #999';
         cell.style.padding = '4px 6px';
       });
-      const container = document.createElement('div');
-      container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 180mm; background: #fff;';
-      container.appendChild(printable);
-      document.body.appendChild(container);
-      try {
         await html2pdf().set({
           margin: [15, 15, 15, 15],
           filename: name + '.pdf',
