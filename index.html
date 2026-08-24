@@ -173,7 +173,30 @@
       return (bytes / 1024 / 1024).toFixed(2) + ' MB';
     }
 
-    function wordFontFamily(fontName, styles) {
+    function fontDescriptor(fontName, styles, commonObjs) {
+      const style = styles[fontName] || {};
+      let loadedFont = null;
+      if (commonObjs && typeof commonObjs.has === 'function' && commonObjs.has(fontName)) {
+        loadedFont = commonObjs.get(fontName);
+      }
+      return [
+        fontName,
+        style.fontFamily,
+        style.fontName,
+        style.fontWeight,
+        style.fontStyle,
+        loadedFont?.name,
+        loadedFont?.loadedName,
+        loadedFont?.fontFamily,
+        loadedFont?.fontName,
+        loadedFont?.fontWeight,
+        loadedFont?.fontStyle,
+        loadedFont?.bold ? 'bold' : '',
+        loadedFont?.italic ? 'italic' : ''
+      ].filter(Boolean).join(' ');
+    }
+
+    function wordFontFamily(fontName, styles, commonObjs) {
       const family = (styles[fontName]?.fontFamily || '').replace(/["']/g, '').trim();
       if (/^sans-serif$/i.test(family)) return 'Arial';
       if (/^monospace$/i.test(family)) return 'Consolas';
@@ -181,9 +204,8 @@
       return family || 'Times New Roman';
     }
 
-    function pdfFontStyles(fontName, styles) {
-      const family = styles[fontName]?.fontFamily || '';
-      const descriptor = fontName + ' ' + family;
+    function pdfFontStyles(fontName, styles, commonObjs) {
+      const descriptor = fontDescriptor(fontName, styles, commonObjs);
       return {
         bold: /bold|black|heavy|demi|semibold/i.test(descriptor),
         italics: /italic|oblique/i.test(descriptor)
@@ -208,7 +230,7 @@
       });
     }
 
-    function pdfItemsToParagraphs(items, styles, annotations = []) {
+    function pdfItemsToParagraphs(items, styles, commonObjs, annotations = []) {
       const lines = [];
       items
         .filter(item => item.str)
@@ -238,14 +260,14 @@
             const gap = previous ? item.x - previous.endX : 0;
             const needsSpace = previous && gap > item.size * 0.15 && !previous.text.endsWith(' ') && !item.str.startsWith(' ');
             const fontName = item.fontName || '';
-            const fontStyles = pdfFontStyles(fontName, styles);
+            const fontStyles = pdfFontStyles(fontName, styles, commonObjs);
             runs.push({
               text: (needsSpace ? ' ' : '') + item.str,
               endX: item.x + item.width,
               bold: fontStyles.bold,
               italics: fontStyles.italics,
               underline: itemHasUnderline(item, annotations),
-              font: wordFontFamily(fontName, styles),
+              font: wordFontFamily(fontName, styles, commonObjs),
               size: item.size
             });
           });
@@ -311,7 +333,7 @@
               pdfPages.push({
                 width: Math.round(viewport.width * 20),
                 height: Math.round(viewport.height * 20),
-                children: pdfItemsToParagraphs(content.items, content.styles, annotations)
+                children: pdfItemsToParagraphs(content.items, content.styles, page.commonObjs, annotations)
               });
             }
             progressBar.style.width = Math.round((pageNumber / pdf.numPages) * 72) + '%';
