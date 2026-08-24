@@ -101,7 +101,7 @@
         <div class="field">
           <label for="ocrLanguage">OCR Language</label>
           <select id="ocrLanguage">
-            <option value="auto">Auto-detect Language</option>
+            <option value="auto">Auto-detect Language (All Languages)</option>
             <option value="eng">English</option>
             <option value="vie">Vietnamese</option>
             <option value="eng+vie">English + Vietnamese</option>
@@ -162,7 +162,6 @@
             <option value="mkd">Macedonian</option>
             <option value="msa">Malay</option>
             <option value="mal">Malayalam</option>
-
             <option value="mlt">Maltese</option>
             <option value="mri">Maori</option>
             <option value="mar">Marathi</option>
@@ -194,7 +193,6 @@
             <option value="tur">Turkish</option>
             <option value="ukr">Ukrainian</option>
             <option value="urd">Urdu</option>
-
             <option value="uzb">Uzbek</option>
             <option value="cym">Welsh</option>
             <option value="yid">Yiddish</option>
@@ -240,6 +238,13 @@
     let selectedFile = null;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const ALL_OCR_LANGS = 'eng+vie+fra+deu+spa+ita+por+rus+chi_sim+chi_tra+jpn+kor+ara+hin+tha+tur+nld+pol+ukr+swe+dan+fin+nor+ces+ron+hun+ell+heb+ind+msa+fil';
+
+    function getSelectedOcrLanguage() {
+      const val = ocrLanguage.value;
+      return val === 'auto' ? ALL_OCR_LANGS : val;
+    }
 
     function setStatus(message, type = '') {
       status.textContent = message;
@@ -523,7 +528,7 @@
           setStatus('Extracting embedded images from document...');
           const extractedImages = await extractImagesFromDocx(file);
           if (extractedImages.length > 0) {
-            const ocrLang = language === 'auto' ? 'eng+vie' : language;
+            const ocrLang = getSelectedOcrLanguage();
             const ocrResults = [];
             for (let i = 0; i < extractedImages.length; i++) {
               setStatus('Detecting text in image ' + (i + 1) + ' of ' + extractedImages.length + '...');
@@ -593,7 +598,7 @@
       const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
       const isDocx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || selectedFile.name.toLowerCase().endsWith('.docx');
       const language = ocrLanguage.value;
-      const ocrLanguageCode = language === 'auto' ? 'eng+vie' : language;
+      const ocrLanguageCode = getSelectedOcrLanguage();
 
       setStatus(isDocx ? 'Reading Word document...' : isPdf ? 'Reading PDF text...' : 'Detecting text in image...');
       progressBar.style.width = '4%';
